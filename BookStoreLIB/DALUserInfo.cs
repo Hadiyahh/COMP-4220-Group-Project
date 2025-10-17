@@ -43,5 +43,18 @@ namespace BookStoreLIB
             }
         }
 
+        // could prob combine queries but its fine we just check manager bool with userid
+        public bool GetManagerFlag(int userId) 
+        {
+            using (var conn = new SqlConnection(Properties.Settings.Default.dbConnectionString)) 
+            using (var cmd = new SqlCommand("SELECT Manager FROM UserData WHERE UserID = @id", conn)) 
+            {
+                cmd.Parameters.AddWithValue("@id", userId); 
+                conn.Open();
+                var obj = cmd.ExecuteScalar(); 
+                return (obj != null && obj != DBNull.Value) && Convert.ToBoolean(obj); 
+            }
+        } 
+
     }
 }

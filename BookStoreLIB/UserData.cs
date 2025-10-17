@@ -8,6 +8,7 @@ namespace BookStoreLIB
         public string LoginName { set; get; }
         public string Password { set; get; }
         public Boolean LoggedIn { set; get; }
+        public bool IsManager { get; private set; }
 
         public Boolean LogIn(string loginName, string passWord)
         {
@@ -53,11 +54,13 @@ namespace BookStoreLIB
                 LoginName = loginName;
                 Password = passWord;
                 LoggedIn = true;
+                IsManager = dbUser.GetManagerFlag(UserID);
                 return true;
             }
             else
             {
                 LoggedIn = false;
+                IsManager = false;
                 return false;
             }
         }
