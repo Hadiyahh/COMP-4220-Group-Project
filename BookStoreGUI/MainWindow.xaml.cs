@@ -40,6 +40,7 @@ namespace BookStoreGUI
 
                         loginButton.Visibility = Visibility.Collapsed;
                         logoutButton.Visibility = Visibility.Visible;
+                        addButton.IsEnabled = true;
                     }
                     else
                     {
@@ -86,6 +87,7 @@ namespace BookStoreGUI
 
             loginButton.Visibility = Visibility.Visible;
             logoutButton.Visibility = Visibility.Collapsed;
+            addButton.IsEnabled = false;
 
             statusTextBlock.Text = "You have been logged out.";
             statusTextBlock.Foreground = Brushes.Black;
@@ -114,11 +116,15 @@ namespace BookStoreGUI
             ProductsDataGrid.ItemsSource = inventory;
             orderListView.ItemsSource = cartBooks;
         }
-        private void Window_Loaded(object sender, RoutedEventArgs e) { }
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            addButton.IsEnabled = false;
+        }
 
         private Cart cart = new Cart(); // create a cart object
         private void updateCart() // for cart UI refresh
         {
+           // cart.ExpiredBooks();
             orderListView.ItemsSource = null;
             orderListView.ItemsSource = cart.shoppingCart;
         }

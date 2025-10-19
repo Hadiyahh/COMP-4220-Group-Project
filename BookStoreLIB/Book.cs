@@ -14,6 +14,7 @@ namespace BookStoreLIB
         public int Quantity { get; set; } = 1;
         public decimal Price { get; set; }
         public int Year { get; set; }
+        //public DateTime CartTimestamp { get; set; }
         public decimal Subtotal => Price * Quantity;
 
     }

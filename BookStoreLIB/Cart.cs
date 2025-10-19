@@ -20,7 +20,7 @@ namespace BookStoreLIB
                     return true;
                 }
             }
-
+                //book.CartTimestamp = DateTime.Now;
                 shoppingCart.Add(book);
                 return true;
         }
@@ -48,6 +48,21 @@ namespace BookStoreLIB
             return false;
 
         }
+
+       /* public void ExpiredBooks()
+        {
+            DateTime now = DateTime.Now;
+
+            for (int i = shoppingCart.Count -1; i>=0; i--)
+            {
+                DateTime added = shoppingCart[i].CartTimestamp;
+                TimeSpan addedTime = DateTime.Now - added;
+                if (addedTime.TotalHours >=48)
+                {
+                    shoppingCart.RemoveAt(i);
+                }
+            }
+        } */
         public void clearCart() // clearing cart
         {
                 shoppingCart.Clear();
