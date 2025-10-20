@@ -14,7 +14,6 @@
     <WarningLevel>4</WarningLevel>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -78,6 +77,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="PaymentWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -89,15 +92,11 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="PaymentWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="PaymentWindow.xaml.cs">
       <DependentUpon>PaymentWindow.xaml</DependentUpon>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -124,11 +123,19 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Database\BookStoreDB.mdf" />
-    <Content Include="Database\BookStoreDB_log.ldf">
-      <DependentUpon>BookStoreDB.mdf</DependentUpon>
-    </Content>
-    <Content Include="Database\Scripts\20251013_AddCartTable.sql" />
+    <None Include="Database\Scripts\20251013_AddCartTable.sql" />
+    <None Include="Database\Scripts\20251017_create_table_bookdata.sql" />
+    <None Include="Database\Scripts\20251017_create_table_category.sql" />
+    <None Include="Database\Scripts\20251017_create_table_OrderItem.sql" />
+    <None Include="Database\Scripts\20251017_create_table_Orders.sql" />
+    <None Include="Database\Scripts\20251017_create_table_supplier.sql" />
+    <None Include="Database\Scripts\20251017_create_table_UserData.sql" />
+    <None Include="Database\Scripts\20251017_DiscountData.sql" />
+    <None Include="Database\Scripts\20251017_Seeddata_DiscountData.sql" />
+    <None Include="Database\Scripts\20251017_seeddata_table_bookdata.sql" />
+    <None Include="Database\Scripts\20251017_seeddata_table_category.sql" />
+    <None Include="Database\Scripts\20251017_seeddata_table_supplier.sql" />
+    <None Include="Database\Scripts\20251017_seeddata_table_UserData.sql" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
