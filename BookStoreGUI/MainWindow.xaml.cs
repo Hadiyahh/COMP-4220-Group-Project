@@ -196,8 +196,6 @@ namespace BookStoreGUI
             var pay = new PaymentWindow();
             pay.ShowDialog();
         } 
-        private void checkoutButton_Click(object sender, RoutedEventArgs e) { } // checkout method later?
-
 
     }
 }
