@@ -10,7 +10,8 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -50,11 +51,16 @@
         <TextBox x:Name="txtEmail"
                  Grid.Row="5"
                  Margin="140,0,18,10"/>
-
+		<!-- Address -->
+		<TextBlock Text="Address:" Grid.Row="6" />
+		<TextBox x:Name="txtAddress"
+                 Grid.Row="6"
+                 Margin="140,0,18,10"/>
+		
         <!-- Pay Button -->
         <Button x:Name="btnPay"
                 Content="Pay Now"
-                Grid.Row="6"
+                Grid.Row="7"
                 Margin="0,20,0,0"
                 Height="35"
                 Width="120"

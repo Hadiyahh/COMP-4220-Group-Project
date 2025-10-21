@@ -37,12 +37,13 @@ namespace BookStoreGUI
             string expiry = txtExpiry.Text;
             string cvv = txtCVV.Password;
             string email = txtEmail.Text;
+            string address = txtAddress.Text;
 
             // If any of the fields are empty return error message
 
             if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(number) ||
                string.IsNullOrWhiteSpace(expiry) || string.IsNullOrWhiteSpace(cvv) ||
-               string.IsNullOrWhiteSpace(email))
+               string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(address))
             {
                 MessageBox.Show("Please fill in all fields.", "Missing Info", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
@@ -62,6 +63,13 @@ namespace BookStoreGUI
             catch
             {
                 MessageBox.Show("Invalid email.");
+                return;
+            }
+
+            // Validate address length
+            if (address.Length < 5)
+            {
+                MessageBox.Show("Please enter a valid address.", "Invalid Address", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
