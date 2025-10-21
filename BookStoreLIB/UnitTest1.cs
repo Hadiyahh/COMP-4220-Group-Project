@@ -3,8 +3,6 @@ using System;
 using System.Data.SqlClient;
 using System.IO;
 using BookStoreLIB;
-using DotNetEnv;
-
 
 namespace BookStoreLIB
 {
@@ -14,97 +12,72 @@ namespace BookStoreLIB
         private UserData userData;
         public TestContext TestContext { get; set; }
 
-        // Keep your originals as defaults
-        private const string RemoteConnDefault =
-            "Data Source=tfs.cs.uwindsor.ca;Initial Catalog=Agile1422DB25;Persist Security Info=True;User ID=Agile1422U25;Password=Agile1422U25$;Encrypt=True;TrustServerCertificate=True";
-
+        private const string DefaultServer = "tfs.cs.uwindsor.ca";
+        private const string DefaultDb = "Agile1422DB25";
         private const string LocalConnTemplate =
             "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\\BookStoreDB.mdf;Integrated Security=True";
 
         [TestInitialize]
         public void Setup()
         {
-            // Try to load .env (optional)
             TryLoadDotEnv();
 
-            // |DataDirectory| for local MDF
             var dataDir = TryFindDatabaseFolder();
             if (dataDir != null)
             {
                 AppDomain.CurrentDomain.SetData("DataDirectory", dataDir);
                 TestContext?.WriteLine("|DataDirectory| => " + dataDir);
             }
-            else
-            {
-                TestContext?.WriteLine("WARNING: Could not locate BookStoreGUI\\Database folder from test bin directory.");
-            }
 
-            // Build remote string: prefer env vars if present, else your default
-            var remote = BuildRemoteConnFromEnv() ?? RemoteConnDefault;
+            var remote = BuildRemoteFromEnv();
             var local = LocalConnTemplate;
 
-            // Prefer remote only if it opens quickly AND has dbo.UserData
             string chosen;
             Exception remoteErr;
-            if (CanOpen(remote, 3, out remoteErr) && TableExists(remote, "dbo", "UserData"))
+            if (!string.IsNullOrWhiteSpace(remote) && CanOpen(remote, 3, out remoteErr))
             {
                 chosen = remote;
-                TestContext?.WriteLine("DB: Using REMOTE connection (BookStoreRemote).");
+                TestContext?.WriteLine("DB: Using REMOTE (env-based).");
             }
             else
             {
-                if (remoteErr != null)
-                    TestContext?.WriteLine("DB: Remote unavailable. Error: " + remoteErr.Message);
-                else
-                    TestContext?.WriteLine("DB: Remote opened but dbo.UserData missing; using LOCAL MDF.");
-
                 chosen = local;
-                TestContext?.WriteLine("DB: Using LOCAL MDF connection (dbConnectionString).");
+                TestContext?.WriteLine("DB: Using LOCAL MDF.");
             }
 
-            // Override the library's connection string for the test run
             BookStoreLIB.Properties.Settings.Default["dbConnectionString"] = chosen;
-
-            // Print masked connection summary
             PrintConnectionSummary(chosen);
 
             userData = new UserData();
         }
-
-        // -------------------
-        //        TESTS
-        // -------------------
 
         [TestMethod]
         public void ValidLogin_ShouldReturnTrue()
         {
             bool ok = userData.LogIn("dclark", "dc1234");
             int userId = userData.UserID;
-
-            Assert.IsTrue(ok, "Expected valid login to return true.");
-            Assert.AreEqual(1, userId, "Expected UserID=1 for dclark.");
+            Assert.IsTrue(ok);
+            Assert.AreEqual(1, userId);
         }
 
         [TestMethod]
         public void InvalidUsername_ShouldReturnFalse()
         {
             bool ok = userData.LogIn("notexist", "xx1234");
-            Assert.IsFalse(ok, "Unknown username should return false.");
+            Assert.IsFalse(ok);
         }
 
         [TestMethod]
         public void PasswordTooShort_ShouldThrowArgumentException()
         {
-            var ex = Assert.ThrowsException<ArgumentException>(
-                delegate { userData.LogIn("dclark", "dc12"); });
+            var ex = Assert.ThrowsException<ArgumentException>(() => userData.LogIn("dclark", "dc12"));
             StringAssert.Contains(ex.Message, "at least six characters");
         }
 
         [TestMethod]
         public void PasswordStartsWithDigit_ShouldThrowArgumentException()
         {
-            var ex = Assert.ThrowsException<ArgumentException>(
-                delegate { userData.LogIn("dclark", "1c1234"); });
+            var ex = Assert.ThrowsException<ArgumentException>(() => userData.LogIn("dclark", "1c1234"));
             StringAssert.Contains(ex.Message, "start with a letter");
         }
 
@@ -124,42 +97,18 @@ namespace BookStoreLIB
             Assert.IsFalse(ud.IsManager);
         }
 
-        // -------------------
-        //     HELPERS
-        // -------------------
-
-        private static void TryLoadDotEnv()
-        {
-            try
-            {
-                // Works if DotNetEnv is installed; otherwise no-op
-                var dir = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
-                for (int i = 0; i < 6 && dir != null; i++, dir = dir.Parent)
-                {
-                    var envPath = Path.Combine(dir.FullName, ".env");
-                    if (File.Exists(envPath))
-                    {
-                        // DotNetEnv optional dependency
-                        try { DotNetEnv.Env.Load(envPath); } catch { /* ignore */ }
-                        break;
-                    }
-                }
-            }
-            catch { /* ignore */ }
-        }
-
-        private static string BuildRemoteConnFromEnv()
+        //remote connection builder with ENV
+        private static string BuildRemoteFromEnv()
         {
             var user = Environment.GetEnvironmentVariable("AGILE_DB_USER");
             var pass = Environment.GetEnvironmentVariable("AGILE_DB_PASSWORD");
-            if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(pass))
-                return null;
-
-            // Build from env (same server/catalog as your default)
+            var server = Environment.GetEnvironmentVariable("AGILE_DB_SERVER") ?? DefaultServer;
+            var db = Environment.GetEnvironmentVariable("AGILE_DB_NAME") ?? DefaultDb;
+            if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(pass)) return null;
             var sb = new SqlConnectionStringBuilder
             {
-                DataSource = "tfs.cs.uwindsor.ca",
-                InitialCatalog = "Agile1422DB25",
+                DataSource = server,
+                InitialCatalog = db,
                 PersistSecurityInfo = true,
                 UserID = user,
                 Password = pass,
@@ -169,46 +118,27 @@ namespace BookStoreLIB
             return sb.ConnectionString;
         }
 
+        // check if we can open
         private static bool CanOpen(string connStr, int timeoutSeconds, out Exception err)
         {
-            SqlConnection conn = null;
             try
             {
-                var withTimeout = connStr;
-                if (IndexOfIgnoreCase(connStr, "connect timeout=") < 0)
-                    withTimeout = connStr.TrimEnd(';') + ";Connect Timeout=" + timeoutSeconds;
-
-                conn = new SqlConnection(withTimeout);
-                conn.Open();
-                err = null;
-                return true;
+                var sb = new SqlConnectionStringBuilder(connStr) { ConnectTimeout = timeoutSeconds };
+                using (var conn = new SqlConnection(sb.ConnectionString))
+                {
+                    conn.Open();
+                    err = null;
+                    return true;
+                }
             }
             catch (Exception ex)
             {
                 err = ex;
                 return false;
             }
-            finally
-            {
-                if (conn != null) conn.Dispose();
-            }
         }
 
-        private static bool TableExists(string connStr, string schema, string table)
-        {
-            using (var conn = new SqlConnection(connStr))
-            using (var cmd = new SqlCommand(
-                "SELECT 1 FROM sys.tables t JOIN sys.schemas s ON s.schema_id=t.schema_id " +
-                "WHERE t.name=@t AND s.name=@s", conn))
-            {
-                cmd.Parameters.AddWithValue("@t", table);
-                cmd.Parameters.AddWithValue("@s", schema);
-                conn.Open();
-                var r = cmd.ExecuteScalar();
-                return r != null;
-            }
-        }
-
+        // trouble shooting
         private void PrintConnectionSummary(string connStr)
         {
             try
@@ -217,7 +147,6 @@ namespace BookStoreLIB
                 var sb = new SqlConnectionStringBuilder(normalized);
                 if (sb.ContainsKey("User ID")) sb.UserID = "***";
                 if (sb.ContainsKey("Password")) sb.Password = "***";
-
                 TestContext?.WriteLine(
                     "DB Summary -> DataSource: " + sb.DataSource +
                     ", InitialCatalog: " + sb.InitialCatalog +
@@ -228,20 +157,38 @@ namespace BookStoreLIB
             }
             catch (Exception ex)
             {
-                var safe = connStr
-                    .Replace("Password=", "Password=***")
-                    .Replace("User ID=", "User ID=***");
+                var safe = connStr.Replace("Password=", "Password=***").Replace("User ID=", "User ID=***");
                 TestContext?.WriteLine("DB Summary -> (raw, masked): " + safe + " | parse error: " + ex.Message);
             }
         }
 
-        private static int IndexOfIgnoreCase(string haystack, string needle)
+        //load env from wherever we store it
+        private static void TryLoadDotEnv()
         {
-            return haystack != null
-                ? haystack.IndexOf(needle, StringComparison.OrdinalIgnoreCase)
-                : -1;
+            try
+            {
+                var dir = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+                for (int i = 0; i < 6 && dir != null; i++, dir = dir.Parent)
+                {
+                    var envPath = Path.Combine(dir.FullName, ".env");
+                    if (!File.Exists(envPath)) continue;
+                    foreach (var raw in File.ReadAllLines(envPath))
+                    {
+                        var line = raw.Trim();
+                        if (line.Length == 0 || line.StartsWith("#")) continue;
+                        var idx = line.IndexOf('=');
+                        if (idx <= 0) continue;
+                        var key = line.Substring(0, idx).Trim();
+                        var val = line.Substring(idx + 1).Trim().Trim('"');
+                        Environment.SetEnvironmentVariable(key, val, EnvironmentVariableTarget.Process);
+                    }
+                    break;
+                }
+            }
+            catch { }
         }
 
+        //fallback db location checking
         private static string TryFindDatabaseFolder()
         {
             var cur = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
@@ -249,8 +196,7 @@ namespace BookStoreLIB
             {
                 var candidate = Path.Combine(cur.FullName, "BookStoreGUI", "Database");
                 var mdf = Path.Combine(candidate, "BookStoreDB.mdf");
-                if (File.Exists(mdf))
-                    return candidate;
+                if (File.Exists(mdf)) return candidate;
             }
             return null;
         }
