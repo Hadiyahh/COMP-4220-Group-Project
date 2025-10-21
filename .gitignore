@@ -364,3 +364,5 @@ FodyWeavers.xsd
 /BookStoreGUI/Database/BookStoreDB.mdf
 /BookStoreGUI/Database/BookStoreDB_log.ldf
 /BookStoreLIB/.env
+BookStoreGUI/Database/BookStoreDB.mdf
+BookStoreGUI/Database/BookStoreDB_log.ldf
