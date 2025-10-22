@@ -123,19 +123,19 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Database\Scripts\20251013_AddCartTable.sql" />
-    <Content Include="Database\Scripts\20251017_create_table_bookdata.sql" />
-    <Content Include="Database\Scripts\20251017_create_table_category.sql" />
-    <Content Include="Database\Scripts\20251017_create_table_OrderItem.sql" />
-    <Content Include="Database\Scripts\20251017_create_table_Orders.sql" />
-    <Content Include="Database\Scripts\20251017_create_table_supplier.sql" />
-    <Content Include="Database\Scripts\20251017_create_table_UserData.sql" />
-    <Content Include="Database\Scripts\20251017_DiscountData.sql" />
-    <Content Include="Database\Scripts\20251017_Seeddata_DiscountData.sql" />
-    <Content Include="Database\Scripts\20251017_seeddata_table_bookdata.sql" />
-    <Content Include="Database\Scripts\20251017_seeddata_table_category.sql" />
-    <Content Include="Database\Scripts\20251017_seeddata_table_supplier.sql" />
-    <Content Include="Database\Scripts\20251017_seeddata_table_UserData.sql" />
+    <None Include="Database\Scripts\20251013_AddCartTable.sql" />
+    <None Include="Database\Scripts\20251017_create_table_bookdata.sql" />
+    <None Include="Database\Scripts\20251017_create_table_category.sql" />
+    <None Include="Database\Scripts\20251017_create_table_OrderItem.sql" />
+    <None Include="Database\Scripts\20251017_create_table_Orders.sql" />
+    <None Include="Database\Scripts\20251017_create_table_supplier.sql" />
+    <None Include="Database\Scripts\20251017_create_table_UserData.sql" />
+    <None Include="Database\Scripts\20251017_DiscountData.sql" />
+    <None Include="Database\Scripts\20251017_Seeddata_DiscountData.sql" />
+    <None Include="Database\Scripts\20251017_seeddata_table_bookdata.sql" />
+    <None Include="Database\Scripts\20251017_seeddata_table_category.sql" />
+    <None Include="Database\Scripts\20251017_seeddata_table_supplier.sql" />
+    <None Include="Database\Scripts\20251017_seeddata_table_UserData.sql" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
