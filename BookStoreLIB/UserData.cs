@@ -9,7 +9,7 @@ namespace BookStoreLIB
         public string Password { set; get; }
         public Boolean LoggedIn { set; get; }
         public bool IsManager { get; private set; }
-
+        public string Type { get; private set; }
         public Boolean LogIn(string loginName, string passWord)
         {
             // Step 1: Basic validation
@@ -54,13 +54,16 @@ namespace BookStoreLIB
                 LoginName = loginName;
                 Password = passWord;
                 LoggedIn = true;
-                IsManager = dbUser.GetManagerFlag(UserID);
+                var flags = dbUser.GetManagerAndType(UserID);   
+                IsManager = flags.IsManager;                    
+                Type = flags.Type;
                 return true;
             }
             else
             {
                 LoggedIn = false;
                 IsManager = false;
+                Type = null;
                 return false;
             }
         }

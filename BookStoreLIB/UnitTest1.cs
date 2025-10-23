@@ -54,10 +54,9 @@ namespace BookStoreLIB
         [TestMethod]
         public void ValidLogin_ShouldReturnTrue()
         {
-            bool ok = userData.LogIn("dclark", "dc1234");
-            int userId = userData.UserID;
-            Assert.IsTrue(ok);
-            Assert.AreEqual(1, userId);
+            bool ok = userData.LogIn("admin", "admin123");
+            Assert.IsTrue(ok, "Expected admin login to succeed.");
+            Assert.AreEqual(101, userData.UserID, "Expected UserID=101 for admin.");
         }
 
         [TestMethod]
@@ -85,16 +84,18 @@ namespace BookStoreLIB
         public void ManagerLogin_SetsIsManagerTrue()
         {
             var ud = new UserData();
-            Assert.IsTrue(ud.LogIn("mjones", "mj1234"));
-            Assert.IsTrue(ud.IsManager);
+            Assert.IsTrue(ud.LogIn("admin", "admin123"), "Admin login failed.");
+            Assert.IsTrue(ud.IsManager, "Admin should be manager (IsManager=true).");
+            Assert.AreEqual("AD", ud.Type, "Admin Type should be 'AD'.");
         }
 
         [TestMethod]
         public void NonManagerLogin_SetsIsManagerFalse()
         {
             var ud = new UserData();
-            Assert.IsTrue(ud.LogIn("dclark", "dc1234"));
-            Assert.IsFalse(ud.IsManager);
+            Assert.IsTrue(ud.LogIn("sanghvi2", "Aryan123"), "Customer login failed.");
+            Assert.IsFalse(ud.IsManager, "Customer should not be manager (IsManager=false).");
+            Assert.AreEqual("CU", ud.Type, "Customer Type should be 'CU'.");
         }
 
         //remote connection builder with ENV

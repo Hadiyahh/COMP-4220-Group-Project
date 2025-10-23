@@ -43,18 +43,29 @@ namespace BookStoreLIB
             }
         }
 
-        // could prob combine queries but its fine we just check manager bool with userid
-        public bool GetManagerFlag(int userId) 
+        // get manager flag and user type in one query
+        public (bool IsManager, string Type) GetManagerAndType(int userId)
         {
-            using (var conn = new SqlConnection(Properties.Settings.Default.dbConnectionString)) 
-            using (var cmd = new SqlCommand("SELECT Manager FROM UserData WHERE UserID = @id", conn)) 
+            using (var conn = new SqlConnection(Properties.Settings.Default.dbConnectionString))
+            using (var cmd = new SqlCommand(
+                "SELECT CAST(Manager AS bit) AS Manager, [Type] " +
+                "FROM UserData WHERE UserID = @id", conn))
             {
-                cmd.Parameters.AddWithValue("@id", userId); 
+                cmd.Parameters.AddWithValue("@id", userId);
                 conn.Open();
-                var obj = cmd.ExecuteScalar(); 
-                return (obj != null && obj != DBNull.Value) && Convert.ToBoolean(obj); 
+                using (var rdr = cmd.ExecuteReader())
+                {
+                    if (rdr.Read())
+                    {
+                        bool isManager = rdr.GetBoolean(0);
+                        string type = rdr.IsDBNull(1) ? null : rdr.GetString(1);
+                        return (isManager, type);
+                    }
+                }
             }
-        } 
+            return (false, null);
+        }
+
 
     }
 }
