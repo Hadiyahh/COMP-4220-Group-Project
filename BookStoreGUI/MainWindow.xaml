@@ -31,7 +31,7 @@
                 <Button Content="Exit" Height="25" x:Name="exitButton"
 		    Width="50" Margin="10,2,0,0" Click="exitButton_Click" />
             </StackPanel>
-            <DataGrid AutoGenerateColumns="False" CanUserAddRows="False" Height="165" 
+            <DataGrid AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True" Height="165" 
 		ItemsSource="{Binding drCat_Book}"
 		x:Name="ProductsDataGrid" RowDetailsVisibilityMode="VisibleWhenSelected"
 		Width="490" HorizontalAlignment="Left" Margin="20,0,20,10"
