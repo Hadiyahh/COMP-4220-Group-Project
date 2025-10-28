@@ -207,6 +207,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="CartSubtotalUnitTests.cs" />
     <Compile Include="UserData.cs" />
     <Compile Include="DALUserInfo.cs" />
     <Compile Include="UnitTest1.cs" />

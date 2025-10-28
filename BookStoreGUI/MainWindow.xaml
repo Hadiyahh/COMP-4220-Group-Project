@@ -63,11 +63,25 @@
 				DisplayMemberBinding="{Binding Title}" />
                             <GridViewColumn Width="60" Header="Quantity"
 				DisplayMemberBinding="{Binding Quantity}" />
-                            <GridViewColumn Width="60" Header="Subtotal"
-				DisplayMemberBinding="{Binding Subtotal}" />
+                            <GridViewColumn Width="60" Header="Price"
+				DisplayMemberBinding="{Binding Price}" />
                         </GridView>
                     </ListView.View>
                 </ListView>
+                <Border Grid.Row="1" BorderThickness="1,0,0,0" Padding="8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock x:Name="subtotalTextBlock"
+                                    Grid.Column="1"
+                                    Text="Subtotal: $0.00"
+                                    VerticalAlignment="Center"
+                                    FontWeight="Bold" />
+                    </Grid>
+                </Border>
          </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
                 <Button x:Name="addButton" MinHeight="25" MinWidth="80"

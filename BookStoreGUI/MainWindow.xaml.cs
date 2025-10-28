@@ -135,11 +135,24 @@ namespace BookStoreGUI
 
         private Cart cart = new Cart(); // create a cart object
 
+        private decimal GetSubTotal() // subtotal calculation
+        {
+            decimal subtotal = 0;
+            foreach (var book in cart.shoppingCart)
+            {
+                subtotal += book.Price;
+            }
+            subtotalTextBlock.Text = $"Subtotal: ${subtotal:F2}";
+            return subtotal;
+        }
+
         private void updateCart() // for cart UI refresh
         {
             // cart.ExpiredBooks();
             orderListView.ItemsSource = null;
             orderListView.ItemsSource = cart.shoppingCart;
+
+            var subtotal = GetSubTotal();
         }
 
         private void addButton_Click(object sender, RoutedEventArgs e) // add button
