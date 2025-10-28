@@ -1,34 +1,87 @@
-﻿<Window x:Class="BookStoreGUI.RegisterDialog"
+﻿<!-- **********************************************************************************
+ * For use by students taking 60-422 (Fall, 2014) to work on assignments and project.
+ * Permission required material. Contact: xyuan@uwindsor.ca 
+ * ********************************************************************************** -->
+
+<Window x:Class="BookStoreGUI.RegisterDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Register User" Height="320" Width="400" WindowStartupLocation="CenterScreen">
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+        Title="Create New Account"
+        Height="450"
+        Width="400"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="#FFFDFDFD">
 
-        <TextBlock Text="Register New User" 
-                   FontWeight="Bold" FontSize="18" 
-                   HorizontalAlignment="Center" Margin="0,0,0,20"/>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="15">
+        <Border BorderBrush="#FFB0B0B0" BorderThickness="1" CornerRadius="10" Padding="20" Margin="10">
+            <StackPanel>
 
-        <StackPanel Grid.Row="1" Margin="0,10,0,0">
-            <TextBlock Text="Full Name:"/>
-            <TextBox x:Name="txtFullName" Width="250" Margin="0,5,0,10"/>
+                <TextBlock Text="Create New Account"
+                           FontWeight="Bold"
+                           FontSize="20"
+                           Foreground="#333"
+                           Margin="0,0,0,20"
+                           HorizontalAlignment="Center" />
 
-            <TextBlock Text="Username:"/>
-            <TextBox x:Name="txtUsername" Width="250" Margin="0,5,0,10"/>
+                <!-- FULL NAME -->
+                <TextBlock Text="Full Name:" FontWeight="SemiBold" />
+                <TextBox x:Name="fullNameTextBox"
+                         Margin="0,5,0,15"
+                         Height="30"
+                         FontSize="14"
+                         BorderBrush="#AAA"
+                         Padding="4"/>
 
-            <TextBlock Text="Password:"/>
-            <PasswordBox x:Name="txtPassword" Width="250" Margin="0,5,0,10"/>
-        </StackPanel>
+                <!-- USERNAME -->
+                <TextBlock Text="Username:" FontWeight="SemiBold" />
+                <TextBox x:Name="usernameTextBox"
+                         Margin="0,5,0,15"
+                         Height="30"
+                         FontSize="14"
+                         BorderBrush="#AAA"
+                         Padding="4"/>
 
-        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
-            <Button Content="Register" Width="100" Margin="5" Click="Register_Click"/>
-            <Button Content="Cancel" Width="100" Margin="5" Click="Cancel_Click"/>
-        </StackPanel>
-    </Grid>
+                <!-- PASSWORD -->
+                <TextBlock Text="Password:" FontWeight="SemiBold" />
+                <PasswordBox x:Name="passwordBox"
+                             Margin="0,5,0,15"
+                             Height="30"
+                             FontSize="14"
+                             BorderBrush="#AAA"/>
+
+                <!-- CONFIRM PASSWORD -->
+                <TextBlock Text="Confirm Password:" FontWeight="SemiBold" />
+                <PasswordBox x:Name="confirmPasswordBox"
+                             Margin="0,5,0,25"
+                             Height="30"
+                             FontSize="14"
+                             BorderBrush="#AAA"/>
+
+                <!-- BUTTONS -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Confirm"
+                            Width="100"
+                            Height="32"
+                            Margin="5"
+                            Background="#FF008CBA"
+                            Foreground="White"
+                            BorderBrush="#FF008CBA"
+                            FontWeight="Bold"
+                            Click="Register_Click"/>
+
+                    <Button Content="Cancel"
+                            Width="90"
+                            Height="32"
+                            Margin="5"
+                            Background="#FFCCCCCC"
+                            BorderBrush="#FFCCCCCC"
+                            Foreground="Black"
+                            FontWeight="Bold"
+                            Click="Cancel_Click"/>
+                </StackPanel>
+
+            </StackPanel>
+        </Border>
+    </ScrollViewer>
 </Window>

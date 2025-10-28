@@ -2,54 +2,60 @@
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Configuration;
 
 namespace BookStoreLIB
 {
-    internal class DALUserInfo
+    public class DALUserInfo   // ✅ Made public so GUI can access it
     {
+        private readonly string connStr;
+
+        public DALUserInfo()
+        {
+            // ✅ Reads from App.config (BookStoreDBConnectionString)
+            connStr = ConfigurationManager.ConnectionStrings["BookStoreDBConnectionString"].ConnectionString;
+        }
+
+        // ---------------- LOGIN METHOD (TEAM CODE) ----------------
         public int LogIn(string userName, string password)
         {
-            var conn = new SqlConnection(Properties.Settings.Default.dbConnectionString);
-
-            try
+            using (var conn = new SqlConnection(connStr))
             {
-                SqlCommand cmd = new SqlCommand();
-                cmd.Connection = conn;
-                cmd.CommandText = "Select UserID from UserData where UserName = @UserName and Password = @Password";
-
-                cmd.Parameters.AddWithValue("@UserName", userName);
-                cmd.Parameters.AddWithValue("@Password", password);
-
-                conn.Open();
-                object result = cmd.ExecuteScalar();
-
-                if (result != null && result != DBNull.Value)
+                try
                 {
-                    int userID = Convert.ToInt32(result);
-                    if (userID > 0) return userID;
-                }
+                    SqlCommand cmd = new SqlCommand();
+                    cmd.Connection = conn;
+                    cmd.CommandText = "SELECT UserID FROM UserData WHERE UserName = @UserName AND Password = @Password";
 
-                return -1;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.ToString());
-                return -1;
-            }
-            finally
-            {
-                if (conn.State == ConnectionState.Open)
-                    conn.Close();
+                    cmd.Parameters.AddWithValue("@UserName", userName);
+                    cmd.Parameters.AddWithValue("@Password", password);
+
+                    conn.Open();
+                    object result = cmd.ExecuteScalar();
+
+                    if (result != null && result != DBNull.Value)
+                    {
+                        int userID = Convert.ToInt32(result);
+                        if (userID > 0)
+                            return userID;
+                    }
+
+                    return -1;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.ToString());
+                    return -1;
+                }
             }
         }
 
-        // get manager flag and user type in one query
+        // ---------------- GET MANAGER FLAG (TEAM CODE) ----------------
         public (bool IsManager, string Type) GetManagerAndType(int userId)
         {
-            using (var conn = new SqlConnection(Properties.Settings.Default.dbConnectionString))
+            using (var conn = new SqlConnection(connStr))
             using (var cmd = new SqlCommand(
-                "SELECT CAST(Manager AS bit) AS Manager, [Type] " +
-                "FROM UserData WHERE UserID = @id", conn))
+                "SELECT CAST(Manager AS bit) AS Manager, [Type] FROM UserData WHERE UserID = @id", conn))
             {
                 cmd.Parameters.AddWithValue("@id", userId);
                 conn.Open();
@@ -66,6 +72,33 @@ namespace BookStoreLIB
             return (false, null);
         }
 
+        // ---------------- REGISTER USER (RITIKA’S ADDITION) ----------------
+        public bool RegisterUser(string fullName, string username, string password)
+        {
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                conn.Open();
 
+                // 1️⃣ Check if username already exists
+                SqlCommand checkCmd = new SqlCommand(
+                    "SELECT COUNT(*) FROM UserData WHERE UserName = @UserName", conn);
+                checkCmd.Parameters.AddWithValue("@UserName", username);
+                int exists = (int)checkCmd.ExecuteScalar();
+
+                if (exists > 0)
+                    return false; // Username already taken
+
+                // 2️⃣ Insert new record into UserData
+                SqlCommand insertCmd = new SqlCommand(
+                    "INSERT INTO UserData (FullName, UserName, Password, Type, Manager) " +
+                    "VALUES (@FullName, @UserName, @Password, 'CU', 0)", conn);
+                insertCmd.Parameters.AddWithValue("@FullName", fullName);
+                insertCmd.Parameters.AddWithValue("@UserName", username);
+                insertCmd.Parameters.AddWithValue("@Password", password);
+
+                insertCmd.ExecuteNonQuery();
+                return true; // ✅ Registration successful
+            }
+        }
     }
 }

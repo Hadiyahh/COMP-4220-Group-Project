@@ -3,12 +3,13 @@
  * Permission required material. Contact: xyuan@uwindsor.ca 
  * **********************************************************************************/
 
+using BookStoreLIB;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.Windows;
-using System.Collections.Generic;
 using System.Windows.Controls;
-using BookStoreLIB;
 using System.Windows.Media;
 
 namespace BookStoreGUI
@@ -19,8 +20,32 @@ namespace BookStoreGUI
         private UserData userData;
         private void registerButton_Click(object sender, RoutedEventArgs e)
         {
-            // Placeholder message
-            MessageBox.Show("Register button clicked - Next implement backend logic", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                // Open the Register Dialog window
+                var registerDialog = new RegisterDialog();
+                registerDialog.Owner = this;
+
+                // Show the dialog and check if user successfully registered
+                bool? result = registerDialog.ShowDialog();
+
+                if (result == true)
+                {
+                    MessageBox.Show("Registration successful! You can now log in.",
+                                    "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    // Optional — no need to show message if user just cancelled
+                    Debug.WriteLine("User cancelled registration or closed the dialog.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening registration form: {ex.Message}",
+                                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
         }
 
         private void loginButton_Click(object sender, RoutedEventArgs e)
