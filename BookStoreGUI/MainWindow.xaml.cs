@@ -81,7 +81,7 @@ namespace BookStoreGUI
 
         private void adminButton_Click(object sender, RoutedEventArgs e)
         {
-            new AdminDashboard().Show();
+            //new AdminDashboard().Show();
         }
 
         private void PerformLogout()
