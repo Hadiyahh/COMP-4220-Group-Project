@@ -1,71 +1,77 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
-using System.Diagnostics;
+using System.Configuration; 
 
 namespace BookStoreLIB
 {
     internal class DALUserInfo
     {
+        private static string ResolveConn()
+        {
+            // for dal we now use the connection string from config if present
+            // this allows us to use the remote db
+            var raw = ConfigurationManager.ConnectionStrings["BookStoreRemote"]?.ConnectionString;
+
+            if (!string.IsNullOrWhiteSpace(raw))
+            {
+                var expanded = Environment.ExpandEnvironmentVariables(raw);
+                var sb = new SqlConnectionStringBuilder(expanded);
+                return sb.ConnectionString;
+            }
+
+            var user = Environment.GetEnvironmentVariable("AGILE_DB_USER");
+            var pass = Environment.GetEnvironmentVariable("AGILE_DB_PASSWORD");
+            var server = Environment.GetEnvironmentVariable("AGILE_DB_SERVER") ?? "tfs.cs.uwindsor.ca";
+            var db = Environment.GetEnvironmentVariable("AGILE_DB_NAME") ?? "Agile1422DB25";
+
+            if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(pass))
+                throw new InvalidOperationException("Missing AGILE_DB_USER / AGILE_DB_PASSWORD environment variables.");
+
+            var sb2 = new SqlConnectionStringBuilder
+            {
+                DataSource = server,
+                InitialCatalog = db,
+                PersistSecurityInfo = true,
+                UserID = user,
+                Password = pass,
+                Encrypt = true,
+                TrustServerCertificate = true
+            };
+            return sb2.ConnectionString;
+        }
+        // made it a bit safer 
         public int LogIn(string userName, string password)
         {
-            var conn = new SqlConnection(Properties.Settings.Default.dbConnectionString);
-
-            try
+            using (var conn = new SqlConnection(ResolveConn()))
+            using (var cmd = new SqlCommand(
+                "SELECT UserID FROM UserData WHERE UserName=@UserName AND Password=@Password", conn))
             {
-                SqlCommand cmd = new SqlCommand();
-                cmd.Connection = conn;
-                cmd.CommandText = "Select UserID from UserData where UserName = @UserName and Password = @Password";
-
-                cmd.Parameters.AddWithValue("@UserName", userName);
-                cmd.Parameters.AddWithValue("@Password", password);
+                cmd.Parameters.Add("@UserName", SqlDbType.NVarChar, 256).Value = userName ?? "";
+                cmd.Parameters.Add("@Password", SqlDbType.NVarChar, 256).Value = password ?? "";
 
                 conn.Open();
-                object result = cmd.ExecuteScalar();
-
-                if (result != null && result != DBNull.Value)
-                {
-                    int userID = Convert.ToInt32(result);
-                    if (userID > 0) return userID;
-                }
-
-                return -1;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.ToString());
-                return -1;
-            }
-            finally
-            {
-                if (conn.State == ConnectionState.Open)
-                    conn.Close();
+                var result = cmd.ExecuteScalar();
+                return (result != null && result != DBNull.Value) ? Convert.ToInt32(result) : -1;
             }
         }
 
-        // get manager flag and user type in one query
+        // also made it a bit safer with type checks
         public (bool IsManager, string Type) GetManagerAndType(int userId)
         {
-            using (var conn = new SqlConnection(Properties.Settings.Default.dbConnectionString))
+            using (var conn = new SqlConnection(ResolveConn()))
             using (var cmd = new SqlCommand(
-                "SELECT CAST(Manager AS bit) AS Manager, [Type] " +
-                "FROM UserData WHERE UserID = @id", conn))
+                "SELECT CAST(Manager AS bit), [Type] FROM UserData WHERE UserID=@id", conn))
             {
-                cmd.Parameters.AddWithValue("@id", userId);
+                cmd.Parameters.Add("@id", SqlDbType.Int).Value = userId;
                 conn.Open();
                 using (var rdr = cmd.ExecuteReader())
                 {
                     if (rdr.Read())
-                    {
-                        bool isManager = rdr.GetBoolean(0);
-                        string type = rdr.IsDBNull(1) ? null : rdr.GetString(1);
-                        return (isManager, type);
-                    }
+                        return (rdr.GetBoolean(0), rdr.IsDBNull(1) ? null : rdr.GetString(1));
                 }
+                return (false, null);
             }
-            return (false, null);
         }
-
-
     }
 }
