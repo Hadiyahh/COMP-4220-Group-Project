@@ -227,10 +227,8 @@ namespace BookStoreGUI
                 MessageBox.Show("Your cart is empty.");
                 return;
             }
+            var pay = new PaymentWindow(cart.shoppingCart);
 
-            // When I want to pass the cart contents to the payment window so it can show a summary
-            // I will add cart.shoppingCart in the parentheses
-            var pay = new PaymentWindow();
             pay.ShowDialog();
         }
     }
