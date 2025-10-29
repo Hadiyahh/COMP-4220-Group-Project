@@ -93,12 +93,12 @@ namespace BookStoreLIB
             {
                 cart.Add(new Book
                 {
-                    BookID = id++,
+                    ISBN = "id++",
                     Title = $"Book{id}",
                     Price = it.price,
                     Quantity = it.qty,
                     Author = "Author",
-                    Year = 2000
+                    Year = "2000"
                 });
             }
             return cart;
