@@ -268,12 +268,12 @@ namespace BookStoreGUI
                 return;
             }
 
-            var checkout = new CheckoutWindow(cart.shoppingCart)
-            {
-                Owner = this
-            };
+            //var checkout = new CheckoutWindow(cart.shoppingCart)
+            //{
+            //    Owner = this
+            //};
 
-            checkout.ShowDialog();
+            //checkout.ShowDialog();
         }
     }
 }
