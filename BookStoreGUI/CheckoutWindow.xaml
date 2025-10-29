@@ -1,0 +1,113 @@
+<Window x:Class="BookStoreGUI.CheckoutWindow"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	Title="Shipping Details" Height="631" Width="400" WindowStartupLocation="CenterScreen">
+
+
+    <ScrollViewer>
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Title -->
+            <TextBlock Text="Checkout Details"
+			FontSize="20"
+			FontWeight="Bold"
+			HorizontalAlignment="Center"
+			Margin="0,10,0,20" />
+
+            <!-- Shipping Info -->
+            <StackPanel Grid.Row="1" Margin="0,0,0,20">
+                <TextBlock Text="Shipping Address" FontWeight="Bold" Margin="0,0,0,10"/>
+                <TextBlock Text="Full Name:"/>
+                <TextBox x:Name="txtShipFullName" Margin="0,0,0,10"/>
+                <TextBlock Text="Street Address:"/>
+                <TextBox x:Name="txtShipStreet" Margin="0,0,0,10"/>
+                <TextBlock Text="City:"/>
+                <TextBox x:Name="txtShipCity" Margin="0,0,0,10"/>
+                <TextBlock Text="Province:"/>
+                <ComboBox x:Name="cmbShipProvince" Margin="0,0,0,10">
+                    <ComboBoxItem Content="Ontario"/>
+                    <ComboBoxItem Content="Quebec"/>
+                    <ComboBoxItem Content="British Columbia"/>
+                    <ComboBoxItem Content="Alberta"/>
+                    <ComboBoxItem Content="Manitoba"/>
+                    <ComboBoxItem Content="Saskatchewan"/>
+                    <ComboBoxItem Content="Nova Scotia"/>
+                    <ComboBoxItem Content="New Brunswick"/>
+                    <ComboBoxItem Content="Newfoundland and Labrador"/>
+                    <ComboBoxItem Content="Prince Edward Island"/>
+                </ComboBox>
+                <TextBlock Text="Postal Code:"/>
+                <TextBox x:Name="txtShipPostalCode" Margin="0,0,0,10"/>
+            </StackPanel>
+
+            <!-- Billing Info -->
+            <!--
+		<StackPanel Grid.Row="2" Margin="0,0,0,20">
+			<TextBlock Text="Billing Address" FontWeight="Bold" Margin="0,0,0,10"/>
+			<TextBlock Text="Full Name:"/>
+			<TextBox x:Name="txtBillFullName" Margin="0,0,0,10"/>
+			<TextBlock Text="Street Address:"/>
+			<TextBox x:Name="txtBillStreet" Margin="0,0,0,10"/>
+			<TextBlock Text="City:"/>
+			<TextBox x:Name="txtBillCity" Margin="0,0,0,10"/>
+			<TextBlock Text="Province:"/>
+			<ComboBox x:Name="cmbBillProvince" Margin="0,0,0,10">
+				<ComboBoxItem Content="Ontario"/>
+				<ComboBoxItem Content="Quebec"/>
+				<ComboBoxItem Content="British Columbia"/>
+				<ComboBoxItem Content="Alberta"/>
+				<ComboBoxItem Content="Manitoba"/>
+				<ComboBoxItem Content="Saskatchewan"/>
+				<ComboBoxItem Content="Nova Scotia"/>
+				<ComboBoxItem Content="New Brunswick"/>
+				<ComboBoxItem Content="Newfoundland and Labrador"/>
+				<ComboBoxItem Content="Prince Edward Island"/>
+			</ComboBox>
+			<TextBlock Text="Postal Code:"/>
+			<TextBox x:Name="txtBillPostalCode" Margin="0,0,0,10"/>
+		</StackPanel>
+		-->
+
+            <!-- Delivery Options -->
+            <StackPanel Grid.Row="3" Margin="0,0,0,20">
+                <TextBlock Text="Delivery Options" FontWeight="Bold" Margin="0,0,0,10"/>
+                <RadioButton x:Name="rdoStandard"
+             			Content="Standard Delivery (Free)"
+             			IsChecked="True"
+             			Checked="rdoStandard_Checked"/>
+
+                <RadioButton x:Name="rdoExpress"
+             			Content="Express Delivery (Arrives within 1 week) - $5.00"
+             			Checked="rdoExpress_Checked"/>
+            </StackPanel>
+
+            <!-- Order Summary -->
+            <StackPanel Grid.Row="4" Margin="0,0,0,20">
+                <TextBlock Text="Order Summary" FontWeight="Bold" Margin="0,0,0,10"/>
+                <TextBlock x:Name="txtSubtotal" Text="Subtotal: $"/>
+                <TextBlock x:Name="txtTaxes" Text="Taxes (13%): $"/>
+                <TextBlock x:Name="txtDeliveryFee" Text="Delivery Fee: $"/>
+                <TextBlock x:Name="txtTotal" FontWeight="Bold" Text="Total: $" Margin="0,10,0,0"/>
+            </StackPanel>
+
+            <!-- Submit Button -->
+            <Button x:Name="btnSubmit"
+		Content="Submit"
+		Grid.Row="6"
+		Margin="0,20,0,0"
+		Height="35"
+		Width="150"
+		HorizontalAlignment="Center"
+		Click="btnSubmit_Click"/>
+        </Grid>
+    </ScrollViewer>
+</Window>

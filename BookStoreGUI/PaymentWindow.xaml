@@ -13,6 +13,7 @@
 			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+                
         </Grid.RowDefinitions>
 
         <!-- Title -->
@@ -58,13 +59,19 @@
                  Margin="140,0,18,10"/>
 		
         <!-- Pay Button -->
-        <Button x:Name="btnPay"
-                Content="Pay Now"
-                Grid.Row="7"
-                Margin="0,20,0,0"
-                Height="35"
-                Width="120"
-                HorizontalAlignment="Center"
-                Click="btnPay_Click"/>
+        <StackPanel Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20">
+            <Button x:Name="btnCancel"
+                    Content="Cancel"
+                    Margin="0,0,20,0"
+                    Height="35"
+                    Width="80"
+                    Click="btnCancel_Click"
+                    />
+            <Button x:Name="btnPay"
+                    Content="Pay Now"
+                    Height="35"
+                    Width="100"
+                    Click="btnPay_Click"/>
+        </StackPanel>
     </Grid>
 </Window>
