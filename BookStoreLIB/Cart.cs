@@ -9,35 +9,39 @@ namespace BookStoreLIB
 {
     public class Cart // all cart related actions
     {
-        public List<Book> shoppingCart = new List<Book>(); // list of books for each customer cart
+        public List<Book> cartBooks = new List<Book>();
         public bool addBook(Book book) // based on obj from DB booklist
         {
-            for (int i = 0; i < shoppingCart.Count; i++)
+            for (int i = 0; i < cartBooks.Count; i++)
             {
-                if (shoppingCart[i].BookID == book.BookID)
+                if (cartBooks[i].ISBN == book.ISBN)
                 {
-                    shoppingCart[i].Quantity += 1;
+                    cartBooks[i].Quantity += 1;
+                    cartBooks[i].UpdateCost();
                     return true;
                 }
             }
+                    book.Quantity = 1;
+                    cartBooks.Add(book);
+                    book.UpdateCost();
+                    return true;
                 //book.CartTimestamp = DateTime.Now;
-                shoppingCart.Add(book);
-                return true;
         }
         public bool removeBook(Book book) // removing cart books
         {
            
-            for (int i = 0; i < shoppingCart.Count; i++)
+            for (int i = 0; i < cartBooks.Count; i++)
             {
-                if (shoppingCart[i].BookID == book.BookID)
+                if (cartBooks[i].ISBN == book.ISBN)
                 {
-                    if (shoppingCart[i].Quantity > 1)
+                    if (cartBooks[i].Quantity > 1)
                     {
-                        shoppingCart[i].Quantity -= 1;
+                        cartBooks[i].Quantity -= 1;
+                        cartBooks[i].UpdateCost();
                     }
                     else
                     {
-                        shoppingCart.RemoveAt(i);
+                        cartBooks.RemoveAt(i);
                         
                     }
                     return true;
@@ -65,7 +69,7 @@ namespace BookStoreLIB
         } */
         public void clearCart() // clearing cart
         {
-                shoppingCart.Clear();
+                cartBooks.Clear();
            
         }
     }
