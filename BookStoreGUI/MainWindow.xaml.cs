@@ -3,13 +3,17 @@
  * Permission required material. Contact: xyuan@uwindsor.ca 
  * **********************************************************************************/
 
+using BookStoreLIB;
 using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Diagnostics.Eventing.Reader;
 using System.Windows;
-using System.Collections.Generic;
 using System.Windows.Controls;
-using BookStoreLIB;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Xml.Linq;
+using System.Configuration;
 
 namespace BookStoreGUI
 {
@@ -41,6 +45,8 @@ namespace BookStoreGUI
                         loginButton.Visibility = Visibility.Collapsed;
                         logoutButton.Visibility = Visibility.Visible;
                         addButton.IsEnabled = true;
+                        removeButton.IsEnabled = false;
+                        clearCart.IsEnabled = false;
                     }
                     else
                     {
@@ -57,7 +63,7 @@ namespace BookStoreGUI
         private void logoutButton_Click(object sender, RoutedEventArgs e)
         {
             //check if cart is not empty
-            if (cart.shoppingCart != null && cart.shoppingCart.Count > 0)
+            if (cart.cartBooks != null && cart.cartBooks.Count > 0)
             {
                 //messagebox display to user
                 var result = MessageBox.Show(
@@ -87,7 +93,10 @@ namespace BookStoreGUI
 
             loginButton.Visibility = Visibility.Visible;
             logoutButton.Visibility = Visibility.Collapsed;
+            
             addButton.IsEnabled = false;
+            removeButton.IsEnabled = false;
+            clearCart.IsEnabled = false;
 
             statusTextBlock.Text = "You have been logged out.";
             statusTextBlock.Foreground = Brushes.Black;
@@ -98,36 +107,89 @@ namespace BookStoreGUI
         private void ProductsDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e) { } // to pull from list
 
         private List<Book> inventory = new List<Book>();
-        private List<Book> cartBooks = new List<Book>();
-        public void LoadTestBooks() // sample hard coded books using Book class (TESTING)
-        {
-            inventory.Add(new Book { BookID = 101, Title = "Book A", Author = "Dr. Suess", Price = 10, Year = 1999 });
-            inventory.Add(new Book { BookID = 102, Title = "Book B", Author = "John Doe", Price = 24, Year = 2008 });
-            inventory.Add(new Book { BookID = 103, Title = "Book C", Author = "Jane Doe", Price = 38, Year = 2024 });
-            inventory.Add(new Book { BookID = 104, Title = "Book D", Author = "Robert Munch", Price = 15, Year = 2017 });
-            inventory.Add(new Book { BookID = 105, Title = "Book E", Author = "Kevin Smith", Price = 44, Year = 2008 });
-            inventory.Add(new Book { BookID = 106, Title = "Book F", Author = "Willow Rich", Price = 38, Year = 2024 });
-            inventory.Add(new Book { BookID = 107, Title = "Book G", Author = "Pricilla Esther", Price = 15, Year = 2017 });
+       
+        private Cart cart = new Cart();
+        public void LoadBooks()
+        {  // name="BookStoreRemote"  ?
+            var CString1 = "Data Source=tfs.cs.uwindsor.ca;Initial Catalog=Agile1422DB25;Persist Security Info=True;User ID=Agile1422U25;Password=Agile1422U25$;Encrypt=True;TrustServerCertificate=True";
+                using (var conn1 = new SqlConnection(CString1))
+            {
+                conn1.Open();
+                var SqlQue1 = "SELECT ISBN, CategoryID, Title, Author, Price, Year, InStock FROM BookData";
 
+                using (var QueCmd1 = new SqlCommand(SqlQue1, conn1))
+                using (var Reader1 = QueCmd1.ExecuteReader())
+                {
+                    while (Reader1.Read())
+
+                        //Console.WriteLine("Title: " + Reader.GetFieldType(2));
+                    {
+                        var book = new Book
+                        {
+                            ISBN = Reader1.GetString(0),
+                            CategoryID = Reader1.GetInt32(1),
+                            Title = Reader1.GetString(2),
+                            Author = Reader1.GetString(3),
+                            Price = Reader1.GetDecimal(4),
+                            Year = Reader1.GetString(5),
+                            InStock = Reader1.GetInt32(6)
+                        };
+
+                        inventory.Add(book);
+                    }
+                }
+
+            }
         }
+
+        public void LoadCart()
+        {  // name="BookStoreRemote"  ? 
+            var CString2 = "Data Source=tfs.cs.uwindsor.ca;Initial Catalog=Agile1422DB25;Persist Security Info=True;User ID=Agile1422U25;Password=Agile1422U25$;Encrypt=True;TrustServerCertificate=True"; ;
+            using (var conn2 = new SqlConnection(CString2))
+            {
+                conn2.Open();
+                var SqlQue2 = "SELECT ISBN, Quantity, Subtotal FROM Cart";
+
+                using (var QueCmd2 = new SqlCommand(SqlQue2, conn2))
+                using (var Reader2 = QueCmd2.ExecuteReader())
+                {
+                    while (Reader2.Read())
+
+                    {
+                        var book = new Book
+                        {
+                            ISBN = Reader2.GetString(0),
+                            Quantity = Reader2.GetInt32(1),
+                            Subtotal = Reader2.GetDecimal(2),
+                        };
+
+                        cart.addBook(book);
+                    }
+                }
+
+            }
+        }
+
         public MainWindow() { // for books from a book list
-            InitializeComponent();
-            LoadTestBooks();
-            ProductsDataGrid.ItemsSource = inventory;
-            orderListView.ItemsSource = cartBooks;
+           InitializeComponent();
+           LoadBooks();
+           LoadCart();
+           ProductsDataGrid.ItemsSource = inventory;
+           orderListView.ItemsSource = cart.cartBooks;
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             addButton.IsEnabled = false;
+            removeButton.IsEnabled = false;
+            clearCart.IsEnabled = false;
         }
-
-        private Cart cart = new Cart(); // create a cart object
         private void updateCart() // for cart UI refresh
         {
            // cart.ExpiredBooks();
             orderListView.ItemsSource = null;
-            orderListView.ItemsSource = cart.shoppingCart;
+            orderListView.ItemsSource = cart.cartBooks;
         }
+
         private void addButton_Click(object sender, RoutedEventArgs e) // add button
         {
             Book bookChoice = (Book)ProductsDataGrid.SelectedItem; // handling if no book is selected
@@ -175,7 +237,7 @@ namespace BookStoreGUI
 
         private void clearCart_Click(object sender, RoutedEventArgs e)
         {
-            if (cart.shoppingCart.Count == 0)
+            if (cart.cartBooks.Count == 0)
             {
                 statusTextBlock.Text = "ERROR: Cart already empty.";
                 statusTextBlock.Foreground = Brushes.Red;
@@ -187,7 +249,7 @@ namespace BookStoreGUI
             statusTextBlock.Foreground = Brushes.Green;
         }
         private void checkoutButton_Click(object sender, RoutedEventArgs e) {
-            if (cart.shoppingCart.Count == 0)
+            if (cart.cartBooks.Count == 0)
             {
                 MessageBox.Show("Your cart is empty.");
                 return;
