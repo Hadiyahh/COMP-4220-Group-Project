@@ -202,6 +202,7 @@
   <ItemGroup>
     <Compile Include="Book.cs" />
     <Compile Include="Cart.cs" />
+    <Compile Include="LogoutTest.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
