@@ -183,11 +183,24 @@ namespace BookStoreGUI
             removeButton.IsEnabled = false;
             clearCart.IsEnabled = false;
         }
+
+        private decimal GetSubTotal() // subtotal calculation
+        {
+            decimal subtotal = 0;
+            foreach (var book in cart.cartBooks)
+            {
+                subtotal += book.Price * book.Quantity;
+            }
+            subtotalTextBlock.Text = $"Subtotal: ${subtotal:F2}";
+            return subtotal;
+        }
+
         private void updateCart() // for cart UI refresh
         {
             // cart.ExpiredBooks();
             orderListView.ItemsSource = null;
             orderListView.ItemsSource = cart.cartBooks;
+            var subtotal = GetSubTotal();
         }
 
         private void addButton_Click(object sender, RoutedEventArgs e) // add button
