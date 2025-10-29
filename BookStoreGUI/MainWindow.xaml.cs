@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using BookStoreGUI;
+using BookStoreLIB;
 
 namespace BookStoreGUI
 {
@@ -260,7 +261,7 @@ namespace BookStoreGUI
                 return;
             }
 
-            var checkout = new CheckoutWindow(cart.shoppingCart)
+            var checkout = new CheckoutWindow(cart.cartBooks)
             {
                 Owner = this
             };
