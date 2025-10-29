@@ -23,11 +23,19 @@ namespace BookStoreGUI
     {
         private List<Book> orderItems;
         private decimal orderTotal;
-        public PaymentWindow(List<Book> cartItems) // In here we only only put setup code
+       // public PaymentWindow(List<Book> cartItems) // In here we only only put setup code
+        private decimal subtotal;
+        private decimal taxes;
+        private decimal deliveryFee;
+            public PaymentWindow(List<Book> cartItems, decimal subtotal, decimal taxes, decimal deliveryFee)
         {
             InitializeComponent(); // Loads everything we defined in the XAML
             orderItems = cartItems ?? new List<Book>();
-            orderTotal = orderItems.Sum(book => book.Price * book.Quantity);
+        //  orderTotal = orderItems.Sum(book => book.Price * book.Quantity);
+            this.subtotal = subtotal;
+            this.taxes = taxes;
+            this.deliveryFee = deliveryFee;
+            this.orderTotal = subtotal + taxes + deliveryFee;
         }
         private void btnPay_Click(object sender, RoutedEventArgs e)
         {
@@ -134,10 +142,11 @@ namespace BookStoreGUI
             }
 
             summary += "----------------------------------------\n" +
-                      $"SUBTOTAL:\t\t${orderTotal:F2}\n" +
-                      $"TAX (13%):\t\t${orderTotal * (decimal)0.13:F2}\n" +
+                      $"SUBTOTAL:\t\t${subtotal:F2}\n" +
+                      $"TAX (13%):\t\t${taxes:F2}\n" +
+                      $"DELIVERY FEE:\t\t${deliveryFee:F2}\n" +
                       "----------------------------------------\n" +
-                      $"TOTAL:\t\t\t${orderTotal * (decimal)1.13:F2}\n" +
+                      $"TOTAL:\t\t\t${orderTotal:F2}\n" +
                       "\nThank you for your order!\n" +
                       "A confirmation email has been sent.";
 
