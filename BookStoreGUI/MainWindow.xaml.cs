@@ -227,9 +227,13 @@ namespace BookStoreGUI
                 MessageBox.Show("Your cart is empty.");
                 return;
             }
-            var pay = new PaymentWindow(cart.shoppingCart);
 
-            pay.ShowDialog();
+            var checkout = new CheckoutWindow(cart.shoppingCart)
+            {
+                Owner = this
+            };
+
+            checkout.ShowDialog();
         }
     }
 }
