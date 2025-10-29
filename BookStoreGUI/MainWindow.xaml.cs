@@ -136,7 +136,7 @@ namespace BookStoreGUI
             decimal subtotal = 0;
             foreach (var book in cart.shoppingCart)
             {
-                subtotal += book.Price;
+                subtotal += book.Price * book.Quantity;
             }
             subtotalTextBlock.Text = $"Subtotal: ${subtotal:F2}";
             return subtotal;
