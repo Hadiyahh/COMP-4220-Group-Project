@@ -1,9 +1,3 @@
-/* **********************************************************************************
- * For use by students taking 60-422 (Fall, 2014) to work on assignments and project.
- * Permission required material. Contact: xyuan@uwindsor.ca 
- * **********************************************************************************/
-
-using BookStoreLIB;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -11,9 +5,7 @@ using System.Diagnostics.Eventing.Reader;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Xml.Linq;
-using System.Configuration;
+using BookStoreGUI;
 
 namespace BookStoreGUI
 {
@@ -268,12 +260,12 @@ namespace BookStoreGUI
                 return;
             }
 
-            //var checkout = new CheckoutWindow(cart.shoppingCart)
-            //{
-            //    Owner = this
-            //};
+            var checkout = new CheckoutWindow(cart.shoppingCart)
+            {
+                Owner = this
+            };
 
-            //checkout.ShowDialog();
+            checkout.ShowDialog();
         }
     }
 }

@@ -39,24 +39,18 @@ namespace BookStoreGUI
         }
         private void btnPay_Click(object sender, RoutedEventArgs e)
         {
-            // optional to add: 
-            // house address, postal code, city etc
-            // for province I can have a drop down option with city names (we will keep our country location to be only Canada in that case)
-            // Reciept option, or summary of order can be sprint 2
-            // 
-            // I want there to be a 'are you sure' when order is being placed with the total amount 
+           
             string name = txtCardName.Text;
             string number = txtCardNumber.Text;
             string expiry = txtExpiry.Text;
             string cvv = txtCVV.Password;
             string email = txtEmail.Text;
-            string address = txtAddress.Text;
 
             // If any of the fields are empty return error message
 
             if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(number) ||
                string.IsNullOrWhiteSpace(expiry) || string.IsNullOrWhiteSpace(cvv) ||
-               string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(address))
+               string.IsNullOrWhiteSpace(email))
             {
                 MessageBox.Show("Please fill in all fields.", "Missing Info", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
@@ -79,12 +73,7 @@ namespace BookStoreGUI
                 return;
             }
 
-            // Validate address length
-            if (address.Length < 5)
-            {
-                MessageBox.Show("Please enter a valid address.", "Invalid Address", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+        
 
             var result = MessageBox.Show(
                 $"Are you sure you want to place this order?\n\nTotal Amount: ${orderTotal:F2}",
@@ -108,10 +97,7 @@ namespace BookStoreGUI
              Commented out clearing fields and added a payment summary
              */
 
-            // All validation passed — show success to the user
-            //MessageBox.Show("Your order has been successfully placed.", "Payment Successful", MessageBoxButton.OK, MessageBoxImage.Information);
-
-            // Later we can implement the order message to show the summary of the books ordered with the prices 
+          
 
             // Clearing fields after successful payment
             // Better for security purposes (if poeple are looking at the screen)
