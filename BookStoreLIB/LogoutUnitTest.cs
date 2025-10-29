@@ -61,18 +61,18 @@ namespace BookStoreGUI
             var cart = new Cart();
 
             // Add some test items
-            cart.addBook(new Book { BookID = 101, Title = "Think Like a Monk", Price = 29.99m });
-            cart.addBook(new Book { BookID = 102, Title = "Programming Guide", Price = 39.99m });
+            cart.addBook(new Book { ISBN = "101", Title = "Think Like a Monk", Price = 29.99m });
+            cart.addBook(new Book { ISBN = "102", Title = "Programming Guide", Price = 39.99m });
 
             Assert.IsTrue(loginResult, "Should successfully login with real user");
             Assert.IsTrue(userData.LoggedIn, "User should be logged in");
-            Assert.AreEqual(2, cart.shoppingCart.Count, "Cart should have items");
+            Assert.AreEqual(2, cart.cartBooks.Count, "Cart should have items");
 
             userData = null;
             cart.clearCart();
 
             Assert.IsNull(userData, "User session should be cleared");
-            Assert.AreEqual(0, cart.shoppingCart.Count, "Cart should be empty");
+            Assert.AreEqual(0, cart.cartBooks.Count, "Cart should be empty");
         }
 
         private static string BuildRemoteFromEnv()
