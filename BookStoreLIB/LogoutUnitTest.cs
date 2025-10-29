@@ -8,9 +8,8 @@ using System.Data.SqlClient;
 namespace BookStoreGUI
 {
     [TestClass]
-    public class LogoutTest
+    public class LogoutUnitTest
     {
-
         private UserData userData;
         public TestContext TestContext { get; set; }
 
