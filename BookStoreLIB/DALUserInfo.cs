@@ -100,5 +100,6 @@ namespace BookStoreLIB
                 return true; // ✅ Registration successful
             }
         }
+        
     }
 }
