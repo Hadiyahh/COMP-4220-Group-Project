@@ -212,7 +212,7 @@
     <Compile Include="CartSubtotalTesting.cs" />
     <Compile Include="UserData.cs" />
     <Compile Include="DALUserInfo.cs" />
-    <Compile Include="UnitTest1.cs" />
+    <Compile Include="LoginUnitTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -7,7 +7,7 @@ using BookStoreLIB;
 namespace BookStoreLIB
 {
     [TestClass]
-    public class UnitTest1
+    public class LoginUnitTests
     {
         private UserData userData;
         public TestContext TestContext { get; set; }
