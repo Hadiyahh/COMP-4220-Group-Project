@@ -105,6 +105,7 @@ namespace BookStoreLIB
             var pass = Environment.GetEnvironmentVariable("AGILE_DB_PASSWORD");
             var server = Environment.GetEnvironmentVariable("AGILE_DB_SERVER") ?? DefaultServer;
             var db = Environment.GetEnvironmentVariable("AGILE_DB_NAME") ?? DefaultDb;
+
             if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(pass)) return null;
             var sb = new SqlConnectionStringBuilder
             {
