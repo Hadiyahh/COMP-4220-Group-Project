@@ -39,8 +39,8 @@ namespace BookStoreGUI
                         loginButton.Visibility = Visibility.Collapsed;
                         logoutButton.Visibility = Visibility.Visible;
                         addButton.IsEnabled = true;
-                        removeButton.IsEnabled = false;
-                        clearCart.IsEnabled = false;
+                        removeButton.IsEnabled = true;
+                        clearCart.IsEnabled = true;
                     }
                     else
                     {
