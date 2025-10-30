@@ -52,14 +52,9 @@
         <TextBox x:Name="txtEmail"
                  Grid.Row="5"
                  Margin="140,0,18,10"/>
-		<!-- Address -->
-		<TextBlock Text="Address:" Grid.Row="6" />
-		<TextBox x:Name="txtAddress"
-                 Grid.Row="6"
-                 Margin="140,0,18,10"/>
-		
+
         <!-- Pay Button -->
-        <StackPanel Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20">
+        <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20">
             <Button x:Name="btnCancel"
                     Content="Cancel"
                     Margin="0,0,20,0"

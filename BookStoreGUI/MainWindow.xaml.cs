@@ -1,9 +1,3 @@
-/* **********************************************************************************
- * For use by students taking 60-422 (Fall, 2014) to work on assignments and project.
- * Permission required material. Contact: xyuan@uwindsor.ca 
- * **********************************************************************************/
-
-using BookStoreLIB;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,7 +5,8 @@ using System.Diagnostics.Eventing.Reader;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-
+using BookStoreGUI;
+using BookStoreLIB;
 namespace BookStoreGUI
 {
     /// Interaction logic for MainWindow.xaml
@@ -23,31 +18,35 @@ namespace BookStoreGUI
         {
             try
             {
-                // Open the Register Dialog window
-                var registerDialog = new RegisterDialog();
-                registerDialog.Owner = this;
+                var dlg = new RegisterDialog { Owner = this };
+                var ok = dlg.ShowDialog();
 
-                // Show the dialog and check if user successfully registered
-                bool? result = registerDialog.ShowDialog();
-
-                if (result == true)
+                if (ok == true && !string.IsNullOrEmpty(dlg.CreatedUserName))
                 {
-                    MessageBox.Show("Registration successful! You can now log in.",
-                                    "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    // Auto-login using the same path as loginButton_Click
+                    userData = new UserData();
+                    if (userData.LogIn(dlg.CreatedUserName, dlg.CreatedPassword))
+                    {
+                        statusTextBlock.Text = "You are logged in as: " + userData.LoginName;
+                        loginButton.Visibility = Visibility.Collapsed;
+                        logoutButton.Visibility = Visibility.Visible;
+                        addButton.IsEnabled = true;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Registered, but auto-login failed. Please log in manually.");
+                    }
                 }
-                else
-                {
-                    // Optional — no need to show message if user just cancelled
-                    Debug.WriteLine("User cancelled registration or closed the dialog.");
-                }
+                // else: user cancelled dialog; do nothing
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error opening registration form: {ex.Message}",
-                                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Could not open registration: " + ex.Message);
             }
-
         }
+
+
+
 
         private void loginButton_Click(object sender, RoutedEventArgs e)
         {
