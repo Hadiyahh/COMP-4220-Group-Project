@@ -204,7 +204,11 @@
     <Compile Include="Book.cs" />
     <Compile Include="BookRepository.cs" />
     <Compile Include="Cart.cs" />
+<<<<<<< HEAD
     <Compile Include="InventoryTest.cs" />
+=======
+    <Compile Include="PaymentLogicTesting.cs" />
+>>>>>>> 5ca6320 (<Test>/added the test cases for the payment fom)
     <Compile Include="LogoutUnitTest.cs" />
     <Compile Include="CheckoutWindowTesting.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
