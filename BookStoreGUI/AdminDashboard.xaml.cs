@@ -11,14 +11,19 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using BookStoreGUI;
 
 namespace BookStoreGUI
 {
     public partial class AdminDashboard : Window
     {
-        public AdminDashboard()
+        public AdminDashboard() // Keeping this because this is our default constructor
         {
             InitializeComponent();
+        }
+        public AdminDashboard(string username) : this() 
+        {
+            TxtCurrentUser.Text = $"Admin: {username}";
         }
 
         // Header: Logout

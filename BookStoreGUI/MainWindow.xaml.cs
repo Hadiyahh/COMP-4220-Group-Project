@@ -42,6 +42,14 @@ namespace BookStoreGUI
                         removeButton.IsEnabled = true;
                         clearCart.IsEnabled = true;
                     }
+                    if (userData.IsManager || string.Equals(userData.Type, "Admin", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var dashboard = new AdminDashboard(userData.LoginName) { Owner = this };
+                        this.Hide();                          // hide main window while dashboard is open
+                        dashboard.Closed += (_, __) => this.Show(); // show it again when dashboard closes
+                        dashboard.Show();                     // open dashboard
+                    }
+                
                     else
                     {
                         MessageBox.Show("You could not be verified. Please try again.");
