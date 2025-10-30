@@ -202,6 +202,7 @@
   <ItemGroup>
     <Compile Include="Book.cs" />
     <Compile Include="Cart.cs" />
+    <Compile Include="Payment.cs" />
     <Compile Include="PaymentLogicTesting.cs" />
     <Compile Include="LogoutUnitTest.cs" />
     <Compile Include="CheckoutWindowTesting.cs" />
@@ -210,6 +211,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="RegisterTests.cs" />
     <Compile Include="CartSubtotalTesting.cs" />
     <Compile Include="UserData.cs" />
     <Compile Include="DALUserInfo.cs" />

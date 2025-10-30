@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Data.SqlClient;
 using System.Diagnostics.Eventing.Reader;
 using System.Windows;
@@ -7,7 +8,6 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using BookStoreGUI;
 using BookStoreLIB;
-
 namespace BookStoreGUI
 {
     /// Interaction logic for MainWindow.xaml
@@ -17,10 +17,37 @@ namespace BookStoreGUI
 
         private void registerButton_Click(object sender, RoutedEventArgs e)
         {
-            // Placeholder message
-            MessageBox.Show("Register button clicked - Next implement backend logic",
-                "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                var dlg = new RegisterDialog { Owner = this };
+                var ok = dlg.ShowDialog();
+
+                if (ok == true && !string.IsNullOrEmpty(dlg.CreatedUserName))
+                {
+                    // Auto-login using the same path as loginButton_Click
+                    userData = new UserData();
+                    if (userData.LogIn(dlg.CreatedUserName, dlg.CreatedPassword))
+                    {
+                        statusTextBlock.Text = "You are logged in as: " + userData.LoginName;
+                        loginButton.Visibility = Visibility.Collapsed;
+                        logoutButton.Visibility = Visibility.Visible;
+                        addButton.IsEnabled = true;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Registered, but auto-login failed. Please log in manually.");
+                    }
+                }
+                // else: user cancelled dialog; do nothing
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not open registration: " + ex.Message);
+            }
         }
+
+
+
 
         private void loginButton_Click(object sender, RoutedEventArgs e)
         {
@@ -287,7 +314,7 @@ namespace BookStoreGUI
                 Owner = this
             };
 
-            checkout.ShowDialog();
+            //    checkout.ShowDialog();
         }
     }
 }
