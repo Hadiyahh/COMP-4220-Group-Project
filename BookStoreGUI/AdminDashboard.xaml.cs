@@ -11,43 +11,37 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using BookStoreGUI;
 
 namespace BookStoreGUI
 {
     public partial class AdminDashboard : Window
     {
-        public AdminDashboard()
+        public AdminDashboard() // Keeping this because this is our default constructor
         {
             InitializeComponent();
+            // Optional: show inventory immediately when dashboard opens
+            // Loaded += (_, __) => ContentHost.Content = new InventoryView();
         }
-
-        // Header: Logout
-        private void BtnLogout_Click(object sender, RoutedEventArgs e)
+        public AdminDashboard(string username) : this() 
         {
-            MessageBox.Show("Logout clicked (TODO: implement sign-out)");
-            Close();
+            TxtCurrentUser.Text = $"Admin: {username}";
         }
 
-        // Left Nav
+        private void BtnLogout_Click(object sender, RoutedEventArgs e) => Close();
+
         private void NavInventory_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: load Inventory view into ContentHost
-            MessageBox.Show("Inventory clicked (TODO)");
+            ContentHost.Content = new InventoryView();
         }
 
         private void NavCategories_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Categories clicked (TODO)");
-        }
+            => MessageBox.Show("Categories clicked (TODO)");
 
         private void NavOffers_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Offers clicked (TODO)");
-        }
+            => MessageBox.Show("Offers clicked (TODO)");
 
         private void NavOrders_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Orders clicked (TODO)");
-        }
+            => MessageBox.Show("Orders clicked (TODO)");
     }
 }
