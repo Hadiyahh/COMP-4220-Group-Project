@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using BookStoreLIB;                 // Book, Cart, UserData, etc.
+using System.Configuration;
 
 namespace BookStoreGUI
 {
@@ -23,6 +24,9 @@ namespace BookStoreGUI
 
         // Optional repo/view wiring for future Admin/Inventory work.
         // Safe to leave even if you don’t have these views yet.
+        private static bool IsAdmin(UserData u) =>
+            u != null && string.Equals(u.Type, "AD", StringComparison.OrdinalIgnoreCase);
+
         private void TryShowInventory()
         {
             try
@@ -32,7 +36,7 @@ namespace BookStoreGUI
                 var view = new Views.InventoryView();
                 // If InventoryView binds to a collection:
                 view.DataContext = inventory;
-                ContentHost.Content = view;
+                //ContentHost.Content = view;
             }
             catch
             {
@@ -82,62 +86,91 @@ namespace BookStoreGUI
             try
             {
                 var dlg = new RegisterDialog { Owner = this };
-                var ok = dlg.ShowDialog();
+                var ok = dlg.ShowDialog() == true;
 
-                if (ok == true && !string.IsNullOrEmpty(dlg.CreatedUserName))
+                if (ok && !string.IsNullOrWhiteSpace(dlg.CreatedUserName))
                 {
-                    userData = new UserData();
-                    if (userData.LogIn(dlg.CreatedUserName, dlg.CreatedPassword))
+                    // Try auto-login only if we have the password too
+                    if (!string.IsNullOrEmpty(dlg.CreatedPassword))
                     {
-                        statusTextBlock.Text = "You are logged in as: " + userData.LoginName;
-                        loginButton.Visibility = Visibility.Collapsed;
-                        logoutButton.Visibility = Visibility.Visible;
-                        addButton.IsEnabled = true;
+                        userData = new UserData();
+                        if (userData.LogIn(dlg.CreatedUserName, dlg.CreatedPassword))
+                        {
+                            statusTextBlock.Text = "You are logged in as: " + userData.LoginName;
+                            loginButton.Visibility = Visibility.Collapsed;
+                            logoutButton.Visibility = Visibility.Visible;
+                            addButton.IsEnabled = true;
+                            return;
+                        }
                     }
-                    else
-                    {
-                        MessageBox.Show("Registered, but auto-login failed. Please log in manually.");
-                    }
+
+                    // Fallback: account created but auto-login not possible/failed
+                    MessageBox.Show("Account created. Please log in with your new credentials.",
+                                    "Registration", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Could not open registration: " + ex.Message);
+                MessageBox.Show("Could not open registration: " + ex.Message,
+                                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
 
         private void loginButton_Click(object sender, RoutedEventArgs e)
         {
             userData = new UserData();
+
             var dlg = new LoginDialog { Owner = this };
-            dlg.ShowDialog();
+            if (dlg.ShowDialog() != true) return;
 
-            if (dlg.DialogResult == true)
+            // Make sure you’re reading the correct controls
+            var username = dlg.nameTextBox.Text.Trim();   // <- ensure it’s the USERNAME box
+            var password = dlg.passwordTextBox.Password;      // do NOT Trim() passwords
+
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrEmpty(password))
             {
-                try
-                {
-                    if (userData.LogIn(dlg.nameTextBox.Text, dlg.passwordTextBox.Password))
-                    {
-                        statusTextBlock.Text = "You are logged in as: " + userData.LoginName;
-                        loginButton.Visibility = Visibility.Collapsed;
-                        logoutButton.Visibility = Visibility.Visible;
+                MessageBox.Show("Enter both username and password.");
+                return;
+            }
 
-                        addButton.IsEnabled = true;
-                        removeButton.IsEnabled = true;
-                        clearCart.IsEnabled = true;
-                        statusTextBlock.Foreground = Brushes.Black;
-                    }
-                    else
-                    {
-                        MessageBox.Show("You could not be verified. Please try again.");
-                    }
-                }
-                catch (ArgumentException ex)
+            try
+            {
+                if (!userData.LogIn(username, password))
                 {
-                    MessageBox.Show(ex.Message);
+                    // TEMP: show which DB we’re actually querying
+                    var cs = ConfigurationManager.ConnectionStrings["BookStoreDBConnectionString"];
+
+                    MessageBox.Show(
+                        $"Login failed for '{username}'.\n" +
+                        $"DB: {cs?.ConnectionString ?? "(not found)"}",
+                        "Not Verified", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                statusTextBlock.Text = "You are logged in as: " + userData.LoginName;
+                loginButton.Visibility = Visibility.Collapsed;
+                logoutButton.Visibility = Visibility.Visible;
+                addButton.IsEnabled = true;
+                removeButton.IsEnabled = true;
+                clearCart.IsEnabled = true;
+
+                if (IsAdmin(userData))
+                {
+                    var admin = new AdminDashboard { Owner = this };
+                    Hide();
+                    admin.Closed += (_, __) => Show();
+                    admin.Show();
                 }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Login error: " + ex.Message);
+            }
         }
+
+
+
 
         private void logoutButton_Click(object sender, RoutedEventArgs e)
         {
@@ -343,7 +376,7 @@ namespace BookStoreGUI
             }
 
             var checkout = new CheckoutWindow(cart.cartBooks) { Owner = this };
-            // checkout.ShowDialog();   // enable when CheckoutWindow is ready
+                checkout.ShowDialog();   // enable when CheckoutWindow is ready
         }
     }
 }

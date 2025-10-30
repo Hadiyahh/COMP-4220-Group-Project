@@ -11,6 +11,10 @@ namespace BookStoreGUI
 {
     public partial class RegisterDialog : Window
     {
+        // Exposed so caller can read it after ShowDialog() == true
+        public string CreatedUserName { get; private set; }
+        public string CreatedPassword { get; private set; }
+
         public RegisterDialog()
         {
             InitializeComponent();
@@ -20,19 +24,21 @@ namespace BookStoreGUI
         {
             string fullName = fullNameTextBox.Text.Trim();
             string username = usernameTextBox.Text.Trim();
-            string password = passwordBox.Password.Trim();
-            string confirmPassword = confirmPasswordBox.Password.Trim();
+            string password = passwordBox.Password;             // Passwords may contain spaces; don’t Trim()
+            string confirmPassword = confirmPasswordBox.Password;
 
             // Basic validation
-            if (string.IsNullOrEmpty(fullName) || string.IsNullOrEmpty(username) ||
-                string.IsNullOrEmpty(password) || string.IsNullOrEmpty(confirmPassword))
+            if (string.IsNullOrWhiteSpace(fullName) ||
+                string.IsNullOrWhiteSpace(username) ||
+                string.IsNullOrEmpty(password) ||
+                string.IsNullOrEmpty(confirmPassword))
             {
                 MessageBox.Show("Please fill in all fields.", "Validation Error",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            if (password != confirmPassword)
+            if (!string.Equals(password, confirmPassword, StringComparison.Ordinal))
             {
                 MessageBox.Show("Passwords do not match.", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
@@ -46,10 +52,14 @@ namespace BookStoreGUI
 
                 if (success)
                 {
+                    // ✅ Set this so the caller can read it (fixes CS1061 usage site)
+                    CreatedUserName = username;
+                    CreatedPassword = password;
                     MessageBox.Show("Account created successfully!", "Success",
                         MessageBoxButton.OK, MessageBoxImage.Information);
-                    this.DialogResult = true;
-                    this.Close();
+
+                    DialogResult = true;   // standard WPF pattern
+                    Close();
                 }
                 else
                 {
@@ -66,8 +76,8 @@ namespace BookStoreGUI
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = false;
-            this.Close();
+            DialogResult = false;
+            Close();
         }
     }
 }
