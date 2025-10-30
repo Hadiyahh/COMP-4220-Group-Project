@@ -67,5 +67,45 @@ namespace BookStoreLIB
                 return false;
             }
         }
+
+        private static bool ValidateRegistration(string username, string password, string confirmPassword, string email)
+        {
+            if (string.IsNullOrWhiteSpace(username) ||
+                string.IsNullOrWhiteSpace(password) ||
+                string.IsNullOrWhiteSpace(confirmPassword) ||
+                string.IsNullOrWhiteSpace(email)) return false;
+
+            if (!string.Equals(password, confirmPassword, StringComparison.Ordinal)) return false;
+            if (password.Length < 6) return false;
+            if (!char.IsLetter(password[0])) return false;
+
+            bool hasLetter = false, hasDigit = false;
+            foreach (char c in password)
+            {
+                if (char.IsLetter(c)) hasLetter = true;
+                else if (char.IsDigit(c)) hasDigit = true;
+                else return false; // only letters/digits
+            }
+            if (!hasLetter || !hasDigit) return false;
+
+            if (!email.Contains("@") || email.StartsWith("@") || email.EndsWith("@")) return false;
+
+            return true;
+        }
+
+        // 1) INSTANCE overload (ud.RegisterUser(u,p,c,e))
+        public bool RegisterUser(string username, string password, string confirmPassword, string email)
+        {
+            return ValidateRegistration(username, password, confirmPassword, email);
+        }
+
+        // 2) STATIC overload (UserData.RegisterUser(u,p,c,e))
+        public static bool RegisterUser(string username, string password, string confirmPassword, string email, bool _ = false)
+        {
+            // note: extra optional bool only to avoid any ambiguity with instance method groups in some test harnesses
+            return ValidateRegistration(username, password, confirmPassword, email);
+        }
+
+
     }
 }
