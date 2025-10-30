@@ -23,15 +23,15 @@ namespace BookStoreGUI
     {
         private List<Book> orderItems;
         private decimal orderTotal;
-       // public PaymentWindow(List<Book> cartItems) // In here we only only put setup code
+        // public PaymentWindow(List<Book> cartItems) // In here we only only put setup code
         private decimal subtotal;
         private decimal taxes;
         private decimal deliveryFee;
-            public PaymentWindow(List<Book> cartItems, decimal subtotal, decimal taxes, decimal deliveryFee)
+        public PaymentWindow(List<Book> cartItems, decimal subtotal, decimal taxes, decimal deliveryFee)
         {
             InitializeComponent(); // Loads everything we defined in the XAML
             orderItems = cartItems ?? new List<Book>();
-        //  orderTotal = orderItems.Sum(book => book.Price * book.Quantity);
+            //  orderTotal = orderItems.Sum(book => book.Price * book.Quantity);
             this.subtotal = subtotal;
             this.taxes = taxes;
             this.deliveryFee = deliveryFee;
@@ -39,7 +39,7 @@ namespace BookStoreGUI
         }
         private void btnPay_Click(object sender, RoutedEventArgs e)
         {
-           
+
             string name = txtCardName.Text;
             string number = txtCardNumber.Text;
             string expiry = txtExpiry.Text;
@@ -73,7 +73,7 @@ namespace BookStoreGUI
                 return;
             }
 
-        
+
 
             var result = MessageBox.Show(
                 $"Are you sure you want to place this order?\n\nTotal Amount: ${orderTotal:F2}",
@@ -97,7 +97,7 @@ namespace BookStoreGUI
              Commented out clearing fields and added a payment summary
              */
 
-          
+
 
             // Clearing fields after successful payment
             // Better for security purposes (if poeple are looking at the screen)
