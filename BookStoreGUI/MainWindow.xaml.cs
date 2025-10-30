@@ -5,12 +5,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Data.SqlClient;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using BookStoreLIB;                 // Book, Cart, UserData, etc.
 using System.Configuration;
+using BookStoreGUI;
 
 namespace BookStoreGUI
 {
@@ -86,35 +88,33 @@ namespace BookStoreGUI
             try
             {
                 var dlg = new RegisterDialog { Owner = this };
-                var ok = dlg.ShowDialog() == true;
+                var ok = dlg.ShowDialog();
 
-                if (ok && !string.IsNullOrWhiteSpace(dlg.CreatedUserName))
+                if (ok == true && !string.IsNullOrEmpty(dlg.CreatedUserName))
                 {
-                    // Try auto-login only if we have the password too
-                    if (!string.IsNullOrEmpty(dlg.CreatedPassword))
+                    // Auto-login using the same path as loginButton_Click
+                    userData = new UserData();
+                    if (userData.LogIn(dlg.CreatedUserName, dlg.CreatedPassword))
                     {
-                        userData = new UserData();
-                        if (userData.LogIn(dlg.CreatedUserName, dlg.CreatedPassword))
-                        {
-                            statusTextBlock.Text = "You are logged in as: " + userData.LoginName;
-                            loginButton.Visibility = Visibility.Collapsed;
-                            logoutButton.Visibility = Visibility.Visible;
-                            addButton.IsEnabled = true;
-                            return;
-                        }
+                        statusTextBlock.Text = "You are logged in as: " + userData.LoginName;
+                        loginButton.Visibility = Visibility.Collapsed;
+                        logoutButton.Visibility = Visibility.Visible;
+                        addButton.IsEnabled = true;
                     }
-
-                    // Fallback: account created but auto-login not possible/failed
-                    MessageBox.Show("Account created. Please log in with your new credentials.",
-                                    "Registration", MessageBoxButton.OK, MessageBoxImage.Information);
+                    else
+                    {
+                        MessageBox.Show("Registered, but auto-login failed. Please log in manually.");
+                    }
                 }
+                // else: user cancelled dialog; do nothing
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Could not open registration: " + ex.Message,
-                                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Could not open registration: " + ex.Message);
             }
         }
+
+
 
 
         private void loginButton_Click(object sender, RoutedEventArgs e)
@@ -138,14 +138,27 @@ namespace BookStoreGUI
             {
                 if (!userData.LogIn(username, password))
                 {
-                    // TEMP: show which DB we’re actually querying
-                    var cs = ConfigurationManager.ConnectionStrings["BookStoreDBConnectionString"];
-
-                    MessageBox.Show(
-                        $"Login failed for '{username}'.\n" +
-                        $"DB: {cs?.ConnectionString ?? "(not found)"}",
-                        "Not Verified", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
+                    if (userData.LogIn(dlg.nameTextBox.Text, dlg.passwordTextBox.Password))
+                    {
+                        statusTextBlock.Text = "You are logged in as: " + userData.LoginName;
+                        loginButton.Visibility = Visibility.Collapsed;
+                        logoutButton.Visibility = Visibility.Visible;
+                        addButton.IsEnabled = true;
+                        removeButton.IsEnabled = true;
+                        clearCart.IsEnabled = true;
+                    }
+                    if (userData.IsManager || string.Equals(userData.Type, "Admin", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var dashboard = new AdminDashboard(userData.LoginName) { Owner = this };
+                        this.Hide();                          // hide main window while dashboard is open
+                        dashboard.Closed += (_, __) => this.Show(); // show it again when dashboard closes
+                        dashboard.Show();                     // open dashboard
+                    }
+                
+                    else
+                    {
+                        MessageBox.Show("You could not be verified. Please try again.");
+                    }
                 }
 
                 statusTextBlock.Text = "You are logged in as: " + userData.LoginName;
@@ -375,8 +388,12 @@ namespace BookStoreGUI
                 return;
             }
 
-            var checkout = new CheckoutWindow(cart.cartBooks) { Owner = this };
-                checkout.ShowDialog();   // enable when CheckoutWindow is ready
+            var checkout = new CheckoutWindow(cart.cartBooks)
+            {
+                Owner = this
+            };
+
+            //    checkout.ShowDialog();
         }
     }
 }

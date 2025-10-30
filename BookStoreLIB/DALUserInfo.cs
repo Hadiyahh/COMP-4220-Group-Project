@@ -2,200 +2,192 @@
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Security.Cryptography;
 
 namespace BookStoreLIB
 {
     public class DALUserInfo
     {
-        private readonly string connStr;
-
-        public DALUserInfo()
+        // -------------------- Connection resolution --------------------
+        private static string ResolveConn()
         {
-            // Try multiple keys so both GUI and tests work
-            connStr = ResolveConnString(
-                "BookStoreDBConnectionString",
-                "BookStoreRemote",
-                "BookStoreLIB.Properties.Settings.dbConnectionString" // LocalDB dev fallback
-            );
-        }
-
-        private static string ResolveConnString(params string[] keys)
-        {
-            foreach (var k in keys)
+            var raw = ConfigurationManager.ConnectionStrings["BookStoreRemote"]?.ConnectionString;
+            if (!string.IsNullOrWhiteSpace(raw))
             {
-                var cs = ConfigurationManager.ConnectionStrings[k]?.ConnectionString;
-                if (!string.IsNullOrWhiteSpace(cs))
-                    return Environment.ExpandEnvironmentVariables(cs);
+                var expanded = Environment.ExpandEnvironmentVariables(raw);
+                var csb = new SqlConnectionStringBuilder(expanded);
+                return csb.ConnectionString;
             }
             throw new InvalidOperationException(
                 "Missing connection string. Define one of: 'BookStoreDBConnectionString', 'BookStoreRemote', or 'BookStoreLIB.Properties.Settings.dbConnectionString' in the startup/test App.config.");
         }
 
-        // ===== PBKDF2 helpers =====
-        private const int SaltSize = 16;   // 128-bit
-        private const int HashSize = 32;   // 256-bit
-        private const int Iterations = 10000;
+            var user = Environment.GetEnvironmentVariable("AGILE_DB_USER");
+            var pass = Environment.GetEnvironmentVariable("AGILE_DB_PASSWORD");
+            var server = Environment.GetEnvironmentVariable("AGILE_DB_SERVER") ?? "tfs.cs.uwindsor.ca";
+            var db = Environment.GetEnvironmentVariable("AGILE_DB_NAME") ?? "Agile1422DB25";
+            if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(pass))
+                throw new InvalidOperationException("Missing AGILE_DB_USER/AGILE_DB_PASSWORD.");
 
-        private static (byte[] hash, byte[] salt) HashPassword(string password)
-        {
-            using (var rng = RandomNumberGenerator.Create())
+            var cs = new SqlConnectionStringBuilder
             {
-                var salt = new byte[SaltSize];
-                rng.GetBytes(salt);
-                // Rfc2898DeriveBytes without explicit algo works on .NET Framework (HMACSHA1)
-                using (var pbkdf2 = new Rfc2898DeriveBytes(password ?? "", salt, Iterations))
-                {
-                    var hash = pbkdf2.GetBytes(HashSize);
-                    return (hash, salt);
-                }
-            }
+                DataSource = server,
+                InitialCatalog = db,
+                PersistSecurityInfo = true,
+                UserID = user,
+                Password = pass,
+                Encrypt = true,
+                TrustServerCertificate = true
+            };
+            return cs.ConnectionString;
         }
 
-        private static bool VerifyPassword(string password, byte[] hash, byte[] salt)
+        // -------------------- Password helpers --------------------
+        private static byte[] NewSalt(int size = 16)
         {
-            using (var pbkdf2 = new Rfc2898DeriveBytes(password ?? "", salt, Iterations))
-            {
-                var cand = pbkdf2.GetBytes(HashSize);
-                int diff = 0;
-                for (int i = 0; i < cand.Length; i++) diff |= cand[i] ^ hash[i];
-                return diff == 0;
-            }
+            var salt = new byte[size];
+            using (var rng = RandomNumberGenerator.Create()) rng.GetBytes(salt);
+            return salt;
         }
 
-        // ---------------- LOGIN (hash verify + legacy fallback) ----------------
+        private static byte[] Pbkdf2(string password, byte[] salt, int iterations = 100_000, int len = 32)
+        {
+            using (var kdf = new Rfc2898DeriveBytes(password ?? "", salt, iterations, HashAlgorithmName.SHA256))
+                return kdf.GetBytes(len);
+        }
+
+        private static bool VerifyHash(string password, byte[] salt, byte[] expected)
+        {
+            if (salt == null || expected == null) return false;
+            var actual = Pbkdf2(password, salt, 100_000, expected.Length);
+            if (actual.Length != expected.Length) return false;
+            // constant-time compare
+            int d = 0;
+            for (int i = 0; i < actual.Length; i++) d |= actual[i] ^ expected[i];
+            return d == 0;
+        }
+
+        // -------------------- Login --------------------
         public int LogIn(string userName, string password)
         {
-            using (var conn = new SqlConnection(connStr))
-            using (var cmd = new SqlCommand(
-                @"SELECT UserID, PasswordHash, PasswordSalt, [Password]
-                  FROM dbo.UserData
-                  WHERE UserName=@u;", conn))
+            using (var conn = new SqlConnection(ResolveConn()))
             {
-                cmd.Parameters.Add("@u", SqlDbType.NVarChar, 50).Value = userName ?? "";
+                conn.Open();
 
-                try
+                // Prefer hashed path if available
+                using (var cmd = new SqlCommand(
+                    "SELECT TOP 1 UserID, PasswordHash, PasswordSalt, [Password] FROM dbo.UserData WHERE UserName=@UserName", conn))
                 {
-                    conn.Open();
+                    cmd.Parameters.Add("@UserName", SqlDbType.VarChar, 20).Value = userName ?? "";
                     using (var r = cmd.ExecuteReader())
                     {
-                        if (!r.Read()) return -1;
-
-                        int userId = r.GetInt32(0);
-                        bool hasHash = !r.IsDBNull(1) && !r.IsDBNull(2);
-                        byte[] hash = hasHash ? (byte[])r.GetValue(1) : null;
-                        byte[] salt = hasHash ? (byte[])r.GetValue(2) : null;
-                        string legacyPw = r.IsDBNull(3) ? null : r.GetString(3);
-
-                        // 1) New path: verify hash/salt
-                        if (hasHash && VerifyPassword(password, hash, salt))
-                            return userId;
-
-                        // 2) Legacy fallback: plaintext match -> migrate row
-                        if (!hasHash && !string.IsNullOrEmpty(legacyPw) && legacyPw == (password ?? ""))
+                        if (r.Read())
                         {
-                            var hp = HashPassword(password);
-                            byte[] newHash = hp.hash;
-                            byte[] newSalt = hp.salt;
+                            int userId = r.GetInt32(0);
+                            byte[] hash = r.IsDBNull(1) ? null : (byte[])r[1];
+                            byte[] salt = r.IsDBNull(2) ? null : (byte[])r[2];
 
-                            r.Close(); // must close reader before UPDATE
-
-                            using (var up = new SqlCommand(
-                                @"UPDATE dbo.UserData
-                                  SET [Password]=N'***', PasswordHash=@h, PasswordSalt=@s
-                                  WHERE UserID=@id;", conn))
+                            if (hash != null && salt != null)
                             {
-                                up.Parameters.Add("@h", SqlDbType.VarBinary, HashSize).Value = newHash;
-                                up.Parameters.Add("@s", SqlDbType.VarBinary, SaltSize).Value = newSalt;
-                                up.Parameters.Add("@id", SqlDbType.Int).Value = userId;
-                                up.ExecuteNonQuery();
+                                if (VerifyHash(password, salt, hash)) return userId;
+                                return -1;
                             }
-                            return userId;
                         }
-
-                        return -1;
                     }
                 }
-                catch (Exception ex)
+
+                // Legacy fallback (plaintext stored in [Password])
+                using (var cmd2 = new SqlCommand(
+                    "SELECT UserID FROM dbo.UserData WHERE UserName=@UserName AND [Password]=@Password", conn))
                 {
-                    Debug.WriteLine(ex.ToString());
-                    return -1;
+                    cmd2.Parameters.Add("@UserName", SqlDbType.VarChar, 20).Value = userName ?? "";
+                    cmd2.Parameters.Add("@Password", SqlDbType.VarChar, 25).Value = password ?? "";
+                    object result = cmd2.ExecuteScalar();
+                    return (result != null && result != DBNull.Value) ? Convert.ToInt32(result) : -1;
                 }
             }
         }
 
-        // ------------- MANAGER + TYPE ----------
+        // -------------------- Role/Type flags (team-compat) --------------------
         public (bool IsManager, string Type) GetManagerAndType(int userId)
         {
-            using (var conn = new SqlConnection(connStr))
-            using (var cmd = new SqlCommand(
-                "SELECT CAST(Manager AS bit) AS Manager, [Type] FROM dbo.UserData WHERE UserID=@id;", conn))
-            {
-                cmd.Parameters.Add("@id", SqlDbType.Int).Value = userId;
+            bool isMgr = false;
+            string type = null;
 
+            using (var conn = new SqlConnection(ResolveConn()))
+            using (var cmd = new SqlCommand(
+                "SELECT Manager, [Type] FROM dbo.UserData WHERE UserID=@UserID", conn))
+            {
+                cmd.Parameters.Add("@UserID", SqlDbType.Int).Value = userId;
                 conn.Open();
                 using (var r = cmd.ExecuteReader())
                 {
-                    if (r.Read())
+                    if (rdr.Read())
                     {
-                        bool isManager = r.GetBoolean(0);
-                        string type = r.IsDBNull(1) ? null : r.GetString(1);
-                        return (isManager, type);
+                        isMgr = rdr.GetBoolean(0);
+                        type = rdr.IsDBNull(1) ? null : rdr.GetString(1);
                     }
                 }
             }
-            return (false, null);
+            return (isMgr, type);
         }
 
-        // ------------- REGISTER (3 args) -------
-        public bool RegisterUser(string fullName, string username, string password)
-            => RegisterUser(fullName, username, password, null);
+        // optional Try* for future use
+        public bool TryGetManagerAndType(int userId, out bool isManager, out string type)
+        {
+            var t = GetManagerAndType(userId);
+            isManager = t.IsManager; type = t.Type;
+            return (type != null) || isManager;
+        }
 
-        // ------------- REGISTER (4 args) -------
+        // -------------------- Register (keep team signature) --------------------
+        public bool RegisterUser(string fullName, string username, string password)
+        {
+            return RegisterUser(fullName, username, password, null);
+        }
+
+        // -------------------- Register (new overload saves Email + hashed password) --------------------
         public bool RegisterUser(string fullName, string username, string password, string email)
         {
-            if (string.IsNullOrWhiteSpace(fullName) ||
-                string.IsNullOrWhiteSpace(username) ||
-                string.IsNullOrWhiteSpace(password))
-                return false;
-
-            // Trim and normalize input
-            string f = fullName.Trim();
-            string u = username.Trim();
-            string e = string.IsNullOrWhiteSpace(email) ? null : email.Trim();
-
-            using (var conn = new SqlConnection(connStr))
+            using (var conn = new SqlConnection(ResolveConn()))
             {
                 conn.Open();
 
-                // Duplicate username (normalize same as insert)
+                // Duplicate username check
                 using (var check = new SqlCommand(
-                    "SELECT COUNT(*) FROM dbo.UserData WHERE LOWER(RTRIM(UserName)) = LOWER(RTRIM(@u));", conn))
+                    "SELECT COUNT(*) FROM dbo.UserData WHERE UserName=@UserName", conn))
                 {
-                    check.Parameters.Add("@u", SqlDbType.NVarChar, 50).Value = u;
+                    check.Parameters.Add("@UserName", SqlDbType.VarChar, 20).Value = username ?? "";
                     int exists = (int)check.ExecuteScalar();
                     if (exists > 0) return false;
                 }
 
-                // Hash + salt
-                var hp = HashPassword(password);
-                byte[] hash = hp.hash;
-                byte[] salt = hp.salt;
+                // Prepare hash
+                var salt = NewSalt(16);
+                var hash = Pbkdf2(password, salt, 100_000, 32);
 
-                // Insert new user
-                using (var ins = new SqlCommand(
-                    @"INSERT INTO dbo.UserData
-                      (FullName, UserName, [Password], PasswordHash, PasswordSalt, Email, [Type], Manager)
-                      VALUES
-                      (@f, @u, N'***', @h, @s, @e, N'CU', 0);", conn))
+                // Insert: rely on the trigger to assign UserID
+                string sql = email == null
+                    ? "INSERT INTO dbo.UserData (FullName, UserName, [Password], [Type], Manager, PasswordHash, PasswordSalt) " +
+                      "VALUES (@FullName, @UserName, @Masked, 'CU', 0, @Hash, @Salt)"
+                    : "INSERT INTO dbo.UserData (FullName, UserName, [Password], [Type], Manager, Email, PasswordHash, PasswordSalt) " +
+                      "VALUES (@FullName, @UserName, @Masked, 'CU', 0, @Email, @Hash, @Salt)";
+
+                using (var insert = new SqlCommand(sql, conn))
                 {
-                    ins.Parameters.Add("@f", SqlDbType.NVarChar, 100).Value = f;
-                    ins.Parameters.Add("@u", SqlDbType.NVarChar, 50).Value = u;
-                    ins.Parameters.Add("@h", SqlDbType.VarBinary, HashSize).Value = hash;
-                    ins.Parameters.Add("@s", SqlDbType.VarBinary, SaltSize).Value = salt;
-                    ins.Parameters.Add("@e", SqlDbType.NVarChar, 100).Value = (object)e ?? DBNull.Value;
-                    ins.ExecuteNonQuery();
+                    insert.Parameters.Add("@FullName", SqlDbType.NVarChar, 50).Value =
+                        string.IsNullOrEmpty(fullName) ? (object)DBNull.Value : fullName;
+                    insert.Parameters.Add("@UserName", SqlDbType.VarChar, 20).Value = username ?? "";
+                    insert.Parameters.Add("@Masked", SqlDbType.VarChar, 25).Value = "***"; // never store plaintext
+                    if (email != null)
+                        insert.Parameters.Add("@Email", SqlDbType.VarChar, 50).Value = email;
+
+                    var pHash = insert.Parameters.Add("@Hash", SqlDbType.VarBinary, 32);
+                    pHash.Value = hash;
+                    var pSalt = insert.Parameters.Add("@Salt", SqlDbType.VarBinary, 16);
+                    pSalt.Value = salt;
+
+                    insert.ExecuteNonQuery();
                 }
 
                 return true;
@@ -203,3 +195,81 @@ namespace BookStoreLIB
         }
     }
 }
+
+//using System;
+//using System.Data;
+//using System.Data.SqlClient;
+//using System.Configuration; 
+
+//namespace BookStoreLIB
+//{
+//    internal class DALUserInfo
+//    {
+//        private static string ResolveConn()
+//        {
+//            // for dal we now use the connection string from config if present
+//            // this allows us to use the remote db
+//            var raw = ConfigurationManager.ConnectionStrings["BookStoreRemote"]?.ConnectionString;
+
+//            if (!string.IsNullOrWhiteSpace(raw))
+//            {
+//                var expanded = Environment.ExpandEnvironmentVariables(raw);
+//                var sb = new SqlConnectionStringBuilder(expanded);
+//                return sb.ConnectionString;
+//            }
+
+//            var user = Environment.GetEnvironmentVariable("AGILE_DB_USER");
+//            var pass = Environment.GetEnvironmentVariable("AGILE_DB_PASSWORD");
+//            var server = Environment.GetEnvironmentVariable("AGILE_DB_SERVER") ?? "tfs.cs.uwindsor.ca";
+//            var db = Environment.GetEnvironmentVariable("AGILE_DB_NAME") ?? "Agile1422DB25";
+
+//            if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(pass))
+//                throw new InvalidOperationException("Missing AGILE_DB_USER / AGILE_DB_PASSWORD environment variables.");
+
+//            var sb2 = new SqlConnectionStringBuilder
+//            {
+//                DataSource = server,
+//                InitialCatalog = db,
+//                PersistSecurityInfo = true,
+//                UserID = user,
+//                Password = pass,
+//                Encrypt = true,
+//                TrustServerCertificate = true
+//            };
+//            return sb2.ConnectionString;
+//        }
+//        // made it a bit safer 
+//        public int LogIn(string userName, string password)
+//        {
+//            using (var conn = new SqlConnection(ResolveConn()))
+//            using (var cmd = new SqlCommand(
+//                "SELECT UserID FROM UserData WHERE UserName=@UserName AND Password=@Password", conn))
+//            {
+//                cmd.Parameters.Add("@UserName", SqlDbType.NVarChar, 256).Value = userName ?? "";
+//                cmd.Parameters.Add("@Password", SqlDbType.NVarChar, 256).Value = password ?? "";
+
+//                conn.Open();
+//                var result = cmd.ExecuteScalar();
+//                return (result != null && result != DBNull.Value) ? Convert.ToInt32(result) : -1;
+//            }
+//        }
+
+//        // also made it a bit safer with type checks
+//        public (bool IsManager, string Type) GetManagerAndType(int userId)
+//        {
+//            using (var conn = new SqlConnection(ResolveConn()))
+//            using (var cmd = new SqlCommand(
+//                "SELECT CAST(Manager AS bit), [Type] FROM UserData WHERE UserID=@id", conn))
+//            {
+//                cmd.Parameters.Add("@id", SqlDbType.Int).Value = userId;
+//                conn.Open();
+//                using (var rdr = cmd.ExecuteReader())
+//                {
+//                    if (rdr.Read())
+//                        return (rdr.GetBoolean(0), rdr.IsDBNull(1) ? null : rdr.GetString(1));
+//                }
+//                return (false, null);
+//            }
+//        }
+//    }
+//}

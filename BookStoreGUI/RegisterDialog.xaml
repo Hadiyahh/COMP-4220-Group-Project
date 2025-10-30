@@ -1,87 +1,53 @@
-﻿<!-- **********************************************************************************
- * For use by students taking 60-422 (Fall, 2014) to work on assignments and project.
- * Permission required material. Contact: xyuan@uwindsor.ca 
- * ********************************************************************************** -->
-
-<Window x:Class="BookStoreGUI.RegisterDialog"
+﻿<Window x:Class="BookStoreGUI.RegisterDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Create New Account"
-        Height="450"
-        Width="400"
-        ResizeMode="NoResize"
+        Title="Create Account"
         WindowStartupLocation="CenterOwner"
-        Background="#FFFDFDFD">
+        ResizeMode="NoResize"
+        Width="380" Height="420"
+        FontFamily="Segoe UI" FontSize="13">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="15">
-        <Border BorderBrush="#FFB0B0B0" BorderThickness="1" CornerRadius="10" Padding="20" Margin="10">
-            <StackPanel>
+        <!-- Header -->
+        <TextBlock Text="Register"
+               FontSize="20"
+               FontWeight="SemiBold"
+               Margin="0,0,0,10"/>
 
-                <TextBlock Text="Create New Account"
-                           FontWeight="Bold"
-                           FontSize="20"
-                           Foreground="#333"
-                           Margin="0,0,0,20"
-                           HorizontalAlignment="Center" />
+        <!-- Form -->
+        <StackPanel Grid.Row="1">
+            <!-- Full Name -->
+            <TextBlock Text="Full name" Margin="0,6,0,2"/>
+            <TextBox x:Name="nameTextBox" Width="260"/>
 
-                <!-- FULL NAME -->
-                <TextBlock Text="Full Name:" FontWeight="SemiBold" />
-                <TextBox x:Name="fullNameTextBox"
-                         Margin="0,5,0,15"
-                         Height="30"
-                         FontSize="14"
-                         BorderBrush="#AAA"
-                         Padding="4"/>
+            <!-- Username -->
+            <TextBlock Text="Username" Margin="0,10,0,2"/>
+            <TextBox x:Name="usernameTextBox"
+               Width="260"
+               ToolTip="Starts with a letter, at least 6 characters, letters and digits only."/>
 
-                <!-- USERNAME -->
-                <TextBlock Text="Username:" FontWeight="SemiBold" />
-                <TextBox x:Name="usernameTextBox"
-                         Margin="0,5,0,15"
-                         Height="30"
-                         FontSize="14"
-                         BorderBrush="#AAA"
-                         Padding="4"/>
+            <!-- Email -->
+            <TextBlock Text="Email" Margin="0,10,0,2"/>
+            <TextBox x:Name="emailTextBox" Width="260"/>
 
-                <!-- PASSWORD -->
-                <TextBlock Text="Password:" FontWeight="SemiBold" />
-                <PasswordBox x:Name="passwordBox"
-                             Margin="0,5,0,15"
-                             Height="30"
-                             FontSize="14"
-                             BorderBrush="#AAA"/>
+            <!-- Password -->
+            <TextBlock Text="Password" Margin="0,10,0,2"/>
+            <PasswordBox x:Name="passwordBox" Width="260"/>
 
-                <!-- CONFIRM PASSWORD -->
-                <TextBlock Text="Confirm Password:" FontWeight="SemiBold" />
-                <PasswordBox x:Name="confirmPasswordBox"
-                             Margin="0,5,0,25"
-                             Height="30"
-                             FontSize="14"
-                             BorderBrush="#AAA"/>
+            <!-- Confirm Password -->
+            <TextBlock Text="Confirm password" Margin="0,10,0,2"/>
+            <PasswordBox x:Name="confirmPasswordBox" Width="260"/>
+        </StackPanel>
 
-                <!-- BUTTONS -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Content="Confirm"
-                            Width="100"
-                            Height="32"
-                            Margin="5"
-                            Background="#FF008CBA"
-                            Foreground="White"
-                            BorderBrush="#FF008CBA"
-                            FontWeight="Bold"
-                            Click="Register_Click"/>
-
-                    <Button Content="Cancel"
-                            Width="90"
-                            Height="32"
-                            Margin="5"
-                            Background="#FFCCCCCC"
-                            BorderBrush="#FFCCCCCC"
-                            Foreground="Black"
-                            FontWeight="Bold"
-                            Click="Cancel_Click"/>
-                </StackPanel>
-
-            </StackPanel>
-        </Border>
-    </ScrollViewer>
+        <!-- Footer buttons -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button Content="Cancel" Width="90" Margin="0,0,8,0" IsCancel="True" Click="Cancel_Click"/>
+            <Button Content="Create account" Width="130" IsDefault="True" Click="Register_Click"/>
+        </StackPanel>
+    </Grid>
 </Window>

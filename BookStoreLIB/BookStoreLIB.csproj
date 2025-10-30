@@ -179,7 +179,6 @@
     <Compile Include="Book.cs" />
     <Compile Include="BookRepository.cs" />
     <Compile Include="Cart.cs" />
-    <Compile Include="InventoryTest.cs" />
     <Compile Include="Payment.cs" />
     <Compile Include="PaymentLogicTesting.cs" />
     <Compile Include="LogoutUnitTest.cs" />
