@@ -20,28 +20,39 @@ namespace BookStoreGUI
         public AdminDashboard() // Keeping this because this is our default constructor
         {
             InitializeComponent();
-            // Optional: show inventory immediately when dashboard opens
-            // Loaded += (_, __) => ContentHost.Content = new InventoryView();
         }
         public AdminDashboard(string username) : this() 
         {
             TxtCurrentUser.Text = $"Admin: {username}";
         }
 
-        private void BtnLogout_Click(object sender, RoutedEventArgs e) => Close();
+        // Header: Logout
+        private void BtnLogout_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Logout clicked (TODO: implement sign-out)");
+            Close();
+        }
 
+        // Left Nav
         private void NavInventory_Click(object sender, RoutedEventArgs e)
         {
-            ContentHost.Content = new InventoryView();
+            // TODO: load Inventory view into ContentHost
+            MessageBox.Show("Inventory clicked (TODO)");
         }
 
         private void NavCategories_Click(object sender, RoutedEventArgs e)
-            => MessageBox.Show("Categories clicked (TODO)");
+        {
+            MessageBox.Show("Categories clicked (TODO)");
+        }
 
         private void NavOffers_Click(object sender, RoutedEventArgs e)
-            => MessageBox.Show("Offers clicked (TODO)");
+        {
+            MessageBox.Show("Offers clicked (TODO)");
+        }
 
         private void NavOrders_Click(object sender, RoutedEventArgs e)
-            => MessageBox.Show("Orders clicked (TODO)");
+        {
+            MessageBox.Show("Orders clicked (TODO)");
+        }
     }
 }
