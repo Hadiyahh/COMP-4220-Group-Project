@@ -202,10 +202,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="AdminLoginTests.cs" />
     <Compile Include="Book.cs" />
+    <Compile Include="BookRepository.cs" />
     <Compile Include="Cart.cs" />
+<<<<<<< HEAD
     <Compile Include="Payment.cs" />
     <Compile Include="PaymentLogicTesting.cs" />
+=======
+    <Compile Include="InventoryTest.cs" />
+>>>>>>> b29a5e5 (feat(admin-dashboard): add Inventory view and ContentHost wiring; load books from BookRepository)
     <Compile Include="LogoutUnitTest.cs" />
     <Compile Include="CheckoutWindowTesting.cs" />
     <Compile Include="RegisterTests.cs" />
