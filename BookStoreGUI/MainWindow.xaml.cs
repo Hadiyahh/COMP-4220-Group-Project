@@ -15,6 +15,9 @@ namespace BookStoreGUI
     {
         private UserData userData;
 
+        private static bool IsAdmin(UserData u) =>
+    u != null && string.Equals(u.Type, "AD", StringComparison.OrdinalIgnoreCase);
+
         private void registerButton_Click(object sender, RoutedEventArgs e)
         {
             // Placeholder message
@@ -25,34 +28,43 @@ namespace BookStoreGUI
         private void loginButton_Click(object sender, RoutedEventArgs e)
         {
             userData = new UserData();
-            var dlg = new LoginDialog();
-            dlg.Owner = this;
+            var dlg = new LoginDialog { Owner = this };
             dlg.ShowDialog();
+            if (dlg.DialogResult != true) return;
 
-            if (dlg.DialogResult == true)
+            try
             {
-                try
+                if (!userData.LogIn(dlg.nameTextBox.Text, dlg.passwordTextBox.Password))
                 {
-                    if (userData.LogIn(dlg.nameTextBox.Text, dlg.passwordTextBox.Password))
-                    {
-                        statusTextBlock.Text = "You are logged in as: " + userData.LoginName;
-                        loginButton.Visibility = Visibility.Collapsed;
-                        logoutButton.Visibility = Visibility.Visible;
-                        addButton.IsEnabled = true;
-                        removeButton.IsEnabled = true;
-                        clearCart.IsEnabled = true;
-                    }
-                    else
-                    {
-                        MessageBox.Show("You could not be verified. Please try again.");
-                    }
+                    MessageBox.Show("You could not be verified. Please try again.");
+                    return;
                 }
-                catch (ArgumentException ex)
+
+                // Common customer login behavior (unchanged)
+                statusTextBlock.Text = "You are logged in as: " + userData.LoginName;
+                loginButton.Visibility = Visibility.Collapsed;
+                logoutButton.Visibility = Visibility.Visible;
+                addButton.IsEnabled = true;
+                removeButton.IsEnabled = true;
+                clearCart.IsEnabled = true;
+
+                // Only admins open the dashboard; customers stay here and shop
+                if (IsAdmin(userData))
                 {
-                    MessageBox.Show(ex.Message); // show validation errors
+                    var admin = new AdminDashboard(); // pass (userData, repos) later if needed
+                    admin.Owner = this;
+                    this.Hide();
+                    admin.Closed += (_, __) => this.Show(); // when admin closes, return to shop
+                    admin.Show();
                 }
+                // else: do nothing — customer stays on MainWindow fully logged in
+            }
+            catch (ArgumentException ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
+
 
         private void logoutButton_Click(object sender, RoutedEventArgs e)
         {
@@ -78,10 +90,10 @@ namespace BookStoreGUI
             }
         }
 
-        private void adminButton_Click(object sender, RoutedEventArgs e)
-        {
-            //new AdminDashboard().Show();
-        }
+        //private void adminButton_Click(object sender, RoutedEventArgs e)
+        //{
+        //    //new AdminDashboard().Show();
+        //}
 
         private void PerformLogout()
         {

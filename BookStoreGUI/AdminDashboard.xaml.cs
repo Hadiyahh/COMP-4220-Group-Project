@@ -1,16 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+﻿using System.Windows;
+using BookStoreGUI.Views;
 
 namespace BookStoreGUI
 {
@@ -19,35 +8,24 @@ namespace BookStoreGUI
         public AdminDashboard()
         {
             InitializeComponent();
+            // Optional: show inventory immediately when dashboard opens
+            // Loaded += (_, __) => ContentHost.Content = new InventoryView();
         }
 
-        // Header: Logout
-        private void BtnLogout_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Logout clicked (TODO: implement sign-out)");
-            Close();
-        }
+        private void BtnLogout_Click(object sender, RoutedEventArgs e) => Close();
 
-        // Left Nav
         private void NavInventory_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: load Inventory view into ContentHost
-            MessageBox.Show("Inventory clicked (TODO)");
+            ContentHost.Content = new InventoryView();
         }
 
         private void NavCategories_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Categories clicked (TODO)");
-        }
+            => MessageBox.Show("Categories clicked (TODO)");
 
         private void NavOffers_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Offers clicked (TODO)");
-        }
+            => MessageBox.Show("Offers clicked (TODO)");
 
         private void NavOrders_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Orders clicked (TODO)");
-        }
+            => MessageBox.Show("Orders clicked (TODO)");
     }
 }
