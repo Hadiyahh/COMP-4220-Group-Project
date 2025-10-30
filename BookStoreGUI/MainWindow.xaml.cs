@@ -306,7 +306,7 @@ namespace BookStoreGUI
                 Owner = this
             };
 
-            //    checkout.ShowDialog();
+            checkout.ShowDialog();
         }
     }
 }
