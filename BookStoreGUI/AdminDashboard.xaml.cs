@@ -19,11 +19,11 @@ namespace BookStoreGUI
     {
         public AdminDashboard() // Keeping this because this is our default constructor
         {
-            InitializeComponent();
+            // InitializeComponent();
         }
         public AdminDashboard(string username) : this() 
         {
-            TxtCurrentUser.Text = $"Admin: {username}";
+            // TxtCurrentUser.Text = $"Admin: {username}";
         }
 
         // Header: Logout
