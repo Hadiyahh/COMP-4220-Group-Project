@@ -99,18 +99,59 @@ namespace BookStoreLIB
         [TestMethod]
         public void ManagerLogin_SetsIsManagerTrue()
         {
+            // Arrange
+            var dal = new DALUserInfo();
+            var username = "test_" + Guid.NewGuid().ToString("N").Substring(0, 6);
+            var password = "Password123";
+            var email = username + "@example.com";
+            var fullname = "Temporary Tester";
+
+            // Step 1: Register normally (will insert Manager = 0, Type = CU by default)
+            bool created = dal.RegisterUser(fullname, username, password, email);
+            Assert.IsTrue(created, "Failed to register test user.");
+
+            // Step 2: Promote this test user to Manager in the database
+            using (var conn = new SqlConnection(
+                "Data Source=tfs.cs.uwindsor.ca;Initial Catalog=Agile1422DB25;Persist Security Info=True;User ID=Agile1422U25;Password=Agile1422U25$;Encrypt=True;TrustServerCertificate=True"))
+            {
+                conn.Open();
+                var promoteCmd = new SqlCommand(
+                    "UPDATE dbo.UserData SET Manager = 1, [Type] = 'AD' WHERE UserName = @UserName", conn);
+                promoteCmd.Parameters.AddWithValue("@UserName", username);
+                promoteCmd.ExecuteNonQuery();
+            }
+
+            // Step 3: Act — log in using the business layer
             var ud = new UserData();
-            Assert.IsTrue(ud.LogIn("admin", "admin123"), "Admin login failed.");
-            Assert.IsTrue(ud.IsManager, "Admin should be manager (IsManager=true).");
-            Assert.AreEqual("AD", ud.Type, "Admin Type should be 'AD'.");
+            bool loggedIn = ud.LogIn(username, password);
+
+            // Assert
+            Assert.IsTrue(loggedIn, "Manager login failed.");
+            Assert.IsTrue(ud.IsManager, "Manager flag should be true.");
+            Assert.AreEqual("AD", ud.Type, "Manager Type should be 'AD'.");
         }
 
         [TestMethod]
         public void NonManagerLogin_SetsIsManagerFalse()
         {
+            // Arrange
+            var dal = new DALUserInfo();
+            var username = "test_" + Guid.NewGuid().ToString("N").Substring(0, 6);
+            var password = "Password123";
+            var email = username + "@example.com";
+            var fullname = "Temporary Customer";
+
+            // Step 1: Register the user (default Manager=0, Type='CU')
+            bool created = dal.RegisterUser(fullname, username, password, email);
+            Assert.IsTrue(created, "Failed to register test customer.");
+
+            // Step 2: Act — log in using business layer
             var ud = new UserData();
-            Assert.IsTrue(ud.LogIn("sanghvi2", "Aryan123"), "Customer login failed.");
-            Assert.IsFalse(ud.IsManager, "Customer should not be manager (IsManager=false).");
+            bool loggedIn = ud.LogIn(username, password);
+
+            // Step 3: Assert
+            Assert.IsTrue(loggedIn, "Customer login failed.");
+            Assert.IsFalse(ud.IsManager, "Customer should not be manager.");
             Assert.AreEqual("CU", ud.Type, "Customer Type should be 'CU'.");
         }
 

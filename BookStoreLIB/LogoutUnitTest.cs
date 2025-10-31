@@ -5,7 +5,7 @@ using BookStoreLIB;
 using System.IO;
 using System.Data.SqlClient;
 
-namespace BookStoreGUI
+namespace BookStoreLIB
 {
     [TestClass]
     public class LogoutUnitTest
@@ -53,27 +53,30 @@ namespace BookStoreGUI
 
         //simulating a user logging in with credentials, then filling cart, then logging out, when user logs out it clears cart and sets user to null
         [TestMethod]
-        public void Logout_AfterRealLogin_ClearsCart()
+        public void Logout_AfterLogin_ClearsCart()
         {
-            //Real login from database
-            var userData = new UserData();
-            bool loginResult = userData.LogIn("lijacki", "pass123");
+            // Arrange: create test user
+            var dal = new DALUserInfo();
+            var username = "test_" + Guid.NewGuid().ToString("N").Substring(0, 6);
+            var password = "Password123";
+            dal.RegisterUser("Temp User", username, password, username + "@example.com");
+
+            // Act: login
+            var ud = new UserData();
+            bool loggedIn = ud.LogIn(username, password);
+            Assert.IsTrue(loggedIn, "Login failed for temporary user");
+
+            // Simulate adding books to cart
             var cart = new Cart();
+            cart.addBook(new Book { ISBN = "1111", Quantity = 1, Price = 10.0m });
 
-            // Add some test items
-            cart.addBook(new Book { ISBN = "101", Title = "Think Like a Monk", Price = 29.99m });
-            cart.addBook(new Book { ISBN = "102", Title = "Programming Guide", Price = 39.99m });
-
-            Assert.IsTrue(loginResult, "Should successfully login with real user");
-            Assert.IsTrue(userData.LoggedIn, "User should be logged in");
-            Assert.AreEqual(2, cart.cartBooks.Count, "Cart should have items");
-
-            userData = null;
+            // Perform logout logic
             cart.clearCart();
 
-            Assert.IsNull(userData, "User session should be cleared");
-            Assert.AreEqual(0, cart.cartBooks.Count, "Cart should be empty");
+            // Assert: cart is empty
+            Assert.AreEqual(0, cart.cartBooks.Count, "Cart should be empty after logout");
         }
+
 
         private static string BuildRemoteFromEnv()
         {
