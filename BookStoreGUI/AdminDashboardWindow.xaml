@@ -1,0 +1,67 @@
+﻿<Window x:Class="BookStoreGUI.AdminDashboardWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Admin Dashboard" Height="720" Width="1180"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top bar -->
+        <DockPanel Grid.Row="0" LastChildFill="False">
+            <TextBlock Text="Admin Dashboard"
+                       FontSize="20" FontWeight="SemiBold"
+                       VerticalAlignment="Center"/>
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                <Button Content="Refresh Inventory" Margin="8,0,0,0" Click="RefreshInventory_Click"/>
+                <Button Content="Refresh Orders" Margin="8,0,0,0" Click="RefreshOrders_Click"/>
+                <Button Content="Close" Margin="8,0,0,0" Click="Close_Click"/>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Main content -->
+        <TabControl Grid.Row="1">
+            <!-- INVENTORY TAB -->
+            <TabItem Header="Inventory">
+                <DockPanel>
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <Button Content="Add" Margin="0,0,8,0" Click="AddBook_Click"/>
+                        <Button Content="Edit" Margin="0,0,8,0" Click="EditBook_Click"/>
+                        <Button Content="Delete" Margin="0,0,8,0" Click="DeleteBook_Click"/>
+                    </StackPanel>
+                    <DataGrid x:Name="InventoryGrid"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              IsReadOnly="True"
+                              SelectionMode="Single">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ISBN" Binding="{Binding ISBN}" Width="140"/>
+                            <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="*"/>
+                            <DataGridTextColumn Header="Author" Binding="{Binding Author}" Width="220"/>
+                            <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="160"/>
+                            <DataGridTextColumn Header="Price" Binding="{Binding Price}" Width="100"/>
+                            <DataGridTextColumn Header="Quantity" Binding="{Binding Quantity}" Width="100"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+
+            <!-- ORDERS TAB -->
+            <TabItem Header="Orders">
+                <DockPanel>
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <Button Content="Mark Completed" Margin="0,0,8,0" Click="CompleteOrder_Click"/>
+                        <Button Content="Delete" Margin="0,0,8,0" Click="DeleteOrder_Click"/>
+                    </StackPanel>
+                    <DataGrid x:Name="OrdersGrid"
+                              AutoGenerateColumns="True"
+                              CanUserAddRows="False"
+                              IsReadOnly="True"
+                              SelectionMode="Single"/>
+                </DockPanel>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>

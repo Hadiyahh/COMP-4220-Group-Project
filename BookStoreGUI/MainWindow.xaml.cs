@@ -68,18 +68,19 @@ namespace BookStoreGUI
                         addButton.IsEnabled = true;
                         removeButton.IsEnabled = true;
                         clearCart.IsEnabled = true;
-                    
-                        if (userData.IsManager || string.Equals(userData.Type, "Admin", StringComparison.OrdinalIgnoreCase))
+
+                        if (userData.IsManager || string.Equals(userData.Type, "AD", StringComparison.OrdinalIgnoreCase))
                         {
-                            var dashboard = new AdminDashboard(userData.LoginName) { Owner = this };
-                            this.Hide();                          // hide main window while dashboard is open
-                            dashboard.Closed += (_, __) => this.Show(); // show it again when dashboard closes
-                            dashboard.Show();                     // open dashboard
+                            var dashboard = new AdminDashboardWindow { Owner = this }; // <-- new type, parameterless
+                            this.Hide();
+                            dashboard.Closed += (_, __) => this.Show();
+                            dashboard.Show();
                         }
-                    }
-                    else
-                    {
-                        MessageBox.Show("You could not be verified. Please try again.");
+
+                        else
+                        {
+                            MessageBox.Show("You could not be verified. Please try again.");
+                        }
                     }
                 }
                 catch (ArgumentException ex)
@@ -115,7 +116,7 @@ namespace BookStoreGUI
 
         private void adminButton_Click(object sender, RoutedEventArgs e)
         {
-            //new AdminDashboard().Show();
+            //new AdminDashboardWindow().Show();
         }
 
         private void PerformLogout()
