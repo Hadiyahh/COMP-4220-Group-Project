@@ -54,10 +54,26 @@ namespace BookStoreLIB
         [TestMethod]
         public void ValidLogin_ShouldReturnTrue()
         {
-            bool ok = userData.LogIn("admin", "admin123");
-            Assert.IsTrue(ok, "Expected admin login to succeed.");
-            Assert.AreEqual(101, userData.UserID, "Expected UserID=101 for admin.");
+            // Arrange
+            var dal = new DALUserInfo();
+            var username = "test_" + Guid.NewGuid().ToString("N").Substring(0, 6);
+            var password = "Password123";
+            var email = username + "@example.com";
+            var fullname = "Temporary Tester";
+
+            // Register new user (which hashes the password automatically)
+            var created = dal.RegisterUser(fullname, username, password, email);
+            Assert.IsTrue(created, "User registration failed — maybe username already exists?");
+
+            // Act
+            var userData = new UserData();
+            bool ok = userData.LogIn(username, password);
+
+            // Assert
+            Assert.IsTrue(ok, "Expected login to succeed with correct password.");
+            Assert.AreNotEqual(0, userData.UserID, "UserID should be populated after login.");
         }
+
 
         [TestMethod]
         public void InvalidUsername_ShouldReturnFalse()
